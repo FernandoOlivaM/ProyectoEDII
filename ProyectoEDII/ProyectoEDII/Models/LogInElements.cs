@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProyectoEDII.Models
 {
-    public class LogIndElements
+    public class LogInElements
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
