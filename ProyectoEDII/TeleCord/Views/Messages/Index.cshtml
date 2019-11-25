@@ -1,0 +1,16 @@
+﻿@{
+    Layout = null;
+}
+
+<h2>Message</h2>
+@using (Html.BeginForm("SendMessage", "Messages", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+
+<textarea name="message" rows="10" cols="50">Write your message here</textarea>
+    <br />
+    <label>Key: <input type="number" min="0" max="1023" name="key" required /></label>
+    <br />
+    <input type="file" name="postedFile" />
+    <br />
+    <input id="send" type="submit" value="Send message" />
+}
