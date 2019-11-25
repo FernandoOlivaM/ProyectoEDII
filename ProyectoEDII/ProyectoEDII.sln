@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProyectoEDII", "ProyectoEDI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeleCord", "TeleCord\TeleCord.csproj", "{8655089C-AC33-4127-BD81-4227DBFC69A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLLS", "DLLS\DLLS.csproj", "{D0BE35BA-5016-456D-BA98-51DCBC33F537}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8655089C-AC33-4127-BD81-4227DBFC69A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8655089C-AC33-4127-BD81-4227DBFC69A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8655089C-AC33-4127-BD81-4227DBFC69A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0BE35BA-5016-456D-BA98-51DCBC33F537}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0BE35BA-5016-456D-BA98-51DCBC33F537}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0BE35BA-5016-456D-BA98-51DCBC33F537}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0BE35BA-5016-456D-BA98-51DCBC33F537}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

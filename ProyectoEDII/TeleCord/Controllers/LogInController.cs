@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
-
+using DLLS;
 namespace TeleCord.Controllers
 {
     public class LogInController : Controller
@@ -21,36 +21,28 @@ namespace TeleCord.Controllers
         //Get LogIn users
         public ActionResult Log_in()
         {
-            //Post
             var userName = Request.Form["userName"].ToString();
             var password = Request.Form["password"].ToString();
-            LogInElements elemento = new LogInElements();
-            elemento.Password = password;
-            elemento.UserName = userName;
+            var levels = Convert.ToInt32(Request.Form["levels"].ToString());
+            LogInElements element = new LogInElements();
+            element.Password = password;
+            element.UserName = userName;
             IEnumerable<LogInElements> login = null;
-            var id = "5dd9bffe81ab023bcca4d1c6";
-            //Put
-            using (var client = new HttpClient())
-            {
-                elemento.Id = id;
-                client.BaseAddress = new Uri("http://localhost:52824");
-                var putTask = client.PutAsync("api/LogIn/" + id, new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
-                putTask.Wait();
-            }
-            //Delete
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("http://localhost:52824");
-                var deleteTask = client.DeleteAsync("api/LogIn/" + id);
-                deleteTask.Wait();
-            }
-            //Post
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("http://localhost:52824");
-                var postjob = client.PostAsync("api/LogIn", new StringContent(new JavaScriptSerializer().Serialize(elemento),Encoding.UTF8,"application/json"));
-                postjob.Wait();
-            }
+            ////Put
+            //using (var client = new HttpClient())
+            //{
+            //    elemento.Id = id;
+            //    client.BaseAddress = new Uri("http://localhost:52824");
+            //    var putTask = client.PutAsync("api/LogIn/" + id, new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
+            //    putTask.Wait();
+            //}
+            ////Delete
+            //using (var client = new HttpClient())
+            //{
+            //    client.BaseAddress = new Uri("http://localhost:52824");
+            //    var deleteTask = client.DeleteAsync("api/LogIn/" + id);
+            //    deleteTask.Wait();
+            //}
             //Get
             using (var client = new HttpClient())
             {
@@ -74,12 +66,61 @@ namespace TeleCord.Controllers
             //fail: show message and form again
             foreach (LogInElements elements in login)
             {
-                if ((elements.Password == password) && (elements.UserName == userName))
+                if ((elements.UserName == userName))
                 {
-                    return View(login);
+                    ZigZag cifradoZigZag = new ZigZag();
+                    var CaracterExtra = new byte();
+                    var BytesList = cifradoZigZag.LecturaDescifrado(elements.Password, ref CaracterExtra);
+                    var CantidadCaracterExtra = 0;
+                    var Matrix = cifradoZigZag.MatrixCreationDecryption(BytesList.Count(), levels, ref CantidadCaracterExtra);
+                    var CaracterExtra2 = new byte();
+                    if (CantidadCaracterExtra > BytesList.Count())
+                    {
+                        BytesList = cifradoZigZag.AgregarCaracterExtra(BytesList, CantidadCaracterExtra, ref CaracterExtra2);
+                    }
+                    //hace falta enviar CaracterExtra2
+                    var Decipherpassword = cifradoZigZag.DecifrarMensaje(levels, BytesList, Matrix, CaracterExtra);
+                    if (Decipherpassword == password)
+                    {
+                        return RedirectToAction("Index","Messages", new { userName});
+                    }
                 }
             }
             return HttpNotFound();
+        }
+        public ActionResult SignUp()
+        {
+            //Post
+            var userName = Request.Form["userName"].ToString();
+            var password = Request.Form["password"].ToString();
+            var levels = Convert.ToInt32(Request.Form["levels"].ToString());
+            //método para cifrar la clave ZigZag
+            ZigZag cifradoZigZag = new ZigZag();
+            var BytesList = cifradoZigZag.LecturaCifrado(password);
+            var CantidadCaracterExtra = 0;
+            var Matrix = cifradoZigZag.MatrixCreation(BytesList.Count(), levels, ref CantidadCaracterExtra);
+            var CaracterExtra = new byte();
+            if (CantidadCaracterExtra > BytesList.Count())
+            {
+                BytesList = cifradoZigZag.AgregarCaracterExtra(BytesList, CantidadCaracterExtra, ref CaracterExtra);
+            }
+            BytesList = cifradoZigZag.CifrarMensaje(Matrix, levels, BytesList, CaracterExtra);
+            var CipherPassword = string.Empty;
+            foreach(byte bit in BytesList)
+            {
+                CipherPassword += (char)bit;
+            }
+            //elemento a cifrar
+            LogInElements elemento = new LogInElements();
+            elemento.Password = CipherPassword;
+            elemento.UserName = userName;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost:52824");
+                var postjob = client.PostAsync("api/LogIn", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
+                postjob.Wait();
+            }
+            return RedirectToAction("Index");
         }
     }
 }

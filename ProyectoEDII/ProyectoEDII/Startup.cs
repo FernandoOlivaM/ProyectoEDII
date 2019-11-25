@@ -28,9 +28,14 @@ namespace ProyectoEDII
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //LogInDatabase
             services.Configure<LogInDatabase>(Configuration.GetSection(nameof(LogInDatabase)));
             services.AddSingleton<ILogInDatabase>(sp => sp.GetRequiredService<IOptions<LogInDatabase>>().Value);
             services.AddSingleton<LogInService>();
+            //MessagesDatabase
+            services.Configure<MessagesDatabase>(Configuration.GetSection(nameof(MessagesDatabase)));
+            services.AddSingleton<IMessagesDatabase>(sp => sp.GetRequiredService<IOptions<MessagesDatabase>>().Value);
+            services.AddSingleton<MessagesService>();
             services.AddControllers();
         }
 
