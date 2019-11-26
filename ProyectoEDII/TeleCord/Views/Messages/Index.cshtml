@@ -98,12 +98,15 @@
 {
 <div class="form-style-6">
     <h1>New Message</h1>
-    <textarea name="message" rows="10" cols="50" required placeholder="Write your message here"> </textarea>
+    <label>To: <input type="text" required /></label>
     <br />
-    <label>Key: <input type="number" min="0" max="1023" name="key" required /></label>
-    <br />
-    <input type="file" name="postedFile" id="postedFile" />
-    <br />
-    <input id="send" type="submit" value="Send message" />
+
+    <label>Message: <textarea required name="message" rows=3 cols=20 placeholder="Write your message here"> </textarea></label>
+        <br />
+        <label>Key: <input type="number" min="0" max="1023" name="key" required /></label>
+        <br />
+        <input type="file" name="postedFile" id="postedFile" />
+        <br />
+        <input id="send" type="submit" value="Send message" />
 </div>
 }

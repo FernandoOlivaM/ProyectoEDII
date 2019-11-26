@@ -25,7 +25,12 @@ namespace TeleCord.Controllers
         {
             var key = Convert.ToInt32(Request.Form["key"]);
             var message = Request.Form["message"].ToString();
-            var a = 37;
+
+            DateTime now = DateTime.Now;
+            long ticks = now.Ticks;
+            long aValue = ticks % 23;
+
+            var a = 22;
             var b = 105;
             var g = 15;
             var p = 23;
