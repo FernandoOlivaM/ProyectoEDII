@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DLLS.Huffman
 {
-    class Tree
+    public class Tree
     {
         static string FileRoute = string.Empty;
         static string FileName = string.Empty;
@@ -103,7 +103,7 @@ namespace DLLS.Huffman
                         codesDictionary.Remove(Convert.ToChar(root.character));
                         codesDictionary.Add(Convert.ToChar(root.character), cantidad);
                         nodeCount++;
-                        generarArchivoDiccionario(root.character, prefixCode, codesDictionary);
+                        createDictionaryFile(root.character, prefixCode, codesDictionary);
                     }
                 }
                 codesDictionary = prefixCodes(root.rightChild, codesDictionary, prefixCode + 1);
