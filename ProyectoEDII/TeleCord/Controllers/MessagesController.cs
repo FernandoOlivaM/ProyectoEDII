@@ -15,6 +15,8 @@ namespace TeleCord.Controllers
 {
     public class MessagesController : Controller
     {
+        static int mensajeValido = 0;
+
         public ActionResult Index()
         {
             var UsersList = new List<Users>();
@@ -24,8 +26,14 @@ namespace TeleCord.Controllers
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                UsersList.Add(Users);
+                //Users.UserName = Users.UserName.ToUpper();
+                if(Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
             }
+            ViewBag.status = mensajeValido;
+
             return View(UsersList);
         }
         [HttpPost]
@@ -84,11 +92,12 @@ namespace TeleCord.Controllers
             elemento.text = ciphertext;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992");
                 var postjob = client.PostAsync("api/Messages", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
                 postjob.Wait();
             }
-            return View();
+            mensajeValido = 1;
+            return RedirectToAction("Index");
         }
     }
 }

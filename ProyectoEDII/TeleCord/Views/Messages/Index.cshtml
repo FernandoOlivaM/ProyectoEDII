@@ -1,18 +1,49 @@
 ﻿@using TeleCord.Models;
 @{
     Layout = null;
+    if (ViewBag.status == 1)
+    {
+        <div class="alert-success">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            <strong>SUCCESS!</strong> The message has been sent.
+
+        </div>
+        <center>
+            <input action="action" id="back" onclick="window.history.go(-2); return false;" type="button" value="Back" />
+        </center>
+    }
 }
 <style type="text/css">
-    #postedFile {
+    .alert-success {
+        padding: 20px;
+        background-color: #5ab300;
+        color: wheat;
+        font-weight: bold;
+    }
+
+    #back {
         background-color: #1e83b8;
         border: none;
         color: white;
-        padding: 8px 16px;
+        padding: 8px 8px;
+        text-align: center;
         text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
         margin: 4px 2px;
         cursor: pointer;
         text-align: center;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: blanchedalmond;
+    }
+
+    h1 {
+        color: #808080;
         font-weight: bold;
+        text-align: center;
     }
 
     .form-style-6 {
@@ -95,12 +126,12 @@
                 background: #2EBC99;
             }
 </style>
-<h2>Message</h2>
+<h1>Messages</h1>
 @using (Html.BeginForm("SendMessage", "Messages", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="form-style-6">
         <h1>New Message</h1>
-        <p><center>Por favor, seleccione Al Usuario al que desea enviarle un mensaje</center></p>
+        <p><center>Please, select the receiver</center></p>
         <form name="SendMessage" action="SendMessage" method="post">
             To User: <select name="UserList">
                 @foreach (Users inventario in Model)
@@ -112,5 +143,8 @@
         <textarea name="message" rows="10" cols="50" required placeholder="Write your message here"> </textarea>
         <br />
         <input id="send" type="submit" value="Send message" />
+
     </div>
+
 }
+

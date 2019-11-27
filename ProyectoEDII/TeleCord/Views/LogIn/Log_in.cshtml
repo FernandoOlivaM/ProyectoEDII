@@ -1,14 +1,51 @@
-﻿<form action="~/Messages/Index">
-    <input id="new" type="submit" value="Send Message" />
-</form>
+﻿@{
+    Layout = null;
+}
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: blanchedalmond;
+    }
 
-<form action="~/Recieve/Index">
-    <input id="recive" type="submit" value="Recive Message" />
-</form>
-<form action="~/SearchKeyword/Index">
-    <input id="recive" type="submit" value="Search By Message" />
-</form>
-<form action="~/FilesCompression/Index">
-    <input id="new" type="submit" value="Send Files Compression" />
-</form>
+    h1 {
+        color: #808080;
+        font-weight: bold;
+        text-align: center;
+       
+    }
+    #button {
+        background-color: #1e83b8;
+        border: none;
+        color: white;
+        padding: 32px 64px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+        font-size : 20px;
+    }
 
+   }
+</style>
+    <h1>PLEASE, SELECT AN OPTION</h1>
+    <body>
+        <center>
+            <form action="~/Messages/Index">
+                <input id="button" type="submit" value="Send Message" />
+            </form>
+
+            <form action="~/Recieve/Index">
+                <input id="button" type="submit" value="Recive Message" />
+            </form>
+            <form action="~/SearchKeyword/Index">
+                <input id="button" type="submit" value="Search By Message" />
+            </form>
+            <form action="~/FilesCompression/Index">
+                <input id="button" type="submit" value="Send Files Compression" />
+            </form>
+            <form action="~/FilesDecompression/Index">
+                <input id="button" type="submit" value="Recive Files Decompression" />
+            </form>
+        </center>
+    </body>

@@ -16,7 +16,7 @@ namespace TeleCord.Models
             IEnumerable<LogInElements> login = null;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992");
                 var responseTask = client.GetAsync("api/LogIn");
                 responseTask.Wait();
                 var result = responseTask.Result;
@@ -38,7 +38,7 @@ namespace TeleCord.Models
             IEnumerable<MessagesElements> messages = null;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992");
                 var responseTask = client.GetAsync("api/Messages");
                 responseTask.Wait();
                 var result = responseTask.Result;
@@ -60,7 +60,7 @@ namespace TeleCord.Models
             IEnumerable<LogInElements> login = null;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992");
                 var responseTask = client.GetAsync("api/LogIn");
                 responseTask.Wait();
                 var result = responseTask.Result;

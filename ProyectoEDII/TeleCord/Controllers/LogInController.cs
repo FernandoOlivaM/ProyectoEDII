@@ -16,10 +16,13 @@ namespace TeleCord.Controllers
 {
     public class LogInController : Controller
     {
+        static int registroValido = 0;
         public ActionResult Index()
         {
+            ViewBag.status = registroValido;
             return View();
         }
+
         //Get LogIn users
         public ActionResult Log_in()
         {
@@ -72,7 +75,8 @@ namespace TeleCord.Controllers
             }
             if (found)
             {
-                return HttpNotFound();
+                registroValido = 2;
+                return RedirectToAction("Index");
             }
             else
             {
@@ -99,10 +103,12 @@ namespace TeleCord.Controllers
                 elemento.PrivateKey = a;
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("http://localhost:51508");
+                    client.BaseAddress = new Uri("http://localhost:58992");
                     var postjob = client.PostAsync("api/LogIn", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
                     postjob.Wait();
+                    registroValido = 1;
                 }
+                
                 return RedirectToAction("Index");
             }
         }

@@ -23,7 +23,10 @@ namespace TeleCord.Controllers
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                UsersList.Add(Users);
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
             }
             return View(UsersList);
         }

@@ -14,7 +14,17 @@
         text-align: center;
         font-weight: bold;
     }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: blanchedalmond;
+    }
 
+    h1 {
+        color: #808080;
+        font-weight: bold;
+        text-align: center;
+       
+    }
     .form-style-6 {
         font: 95% Arial, Helvetica, sans-serif;
         max-width: 400px;
@@ -100,9 +110,9 @@
 {
     <div class="form-style-6">
         <h1>New Message</h1>
-        <p><center>Por favor, seleccione Al Usuario al que desea enviarle un mensaje</center></p>
+        <p><center>Please, select the receiver</center></p>
         <form name="SendMessage" action="SendMessage" method="post">
-            To User: <select name="UserList">
+            To User: <select name="UserList" required>
                 @foreach (Users inventario in Model)
                 {
                     <option>@inventario.UserName</option>
