@@ -96,7 +96,7 @@
             }
 </style>
 <h2>Message</h2>
-@using (Html.BeginForm("SendMessage", "Messages", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("RecieveMessage", "Recieve", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="form-style-6">
         <h1>New Message</h1>
@@ -109,8 +109,6 @@
                 }
             </select>
         </form>
-        <textarea name="message" rows="10" cols="50" required placeholder="Write your message here"> </textarea>
-        <input type="file" name="postedFile" id="postedFile" />
         <br />
         <input id="send" type="submit" value="Send message" />
     </div>

@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using DLLS;
+using TeleCord.datos;
+
 namespace TeleCord.Controllers
 {
     public class LogInController : Controller
@@ -24,65 +26,27 @@ namespace TeleCord.Controllers
             var userName = Request.Form["userName"].ToString();
             var password = Request.Form["password"].ToString();
             var levels = Convert.ToInt32(Request.Form["levels"].ToString());
-            LogInElements element = new LogInElements();
+            var element = new LogInElements();
             element.Password = password;
             element.UserName = userName;
-            IEnumerable<LogInElements> login = null;
-            ////Put
-            //using (var client = new HttpClient())
-            //{
-            //    elemento.Id = id;
-            //    client.BaseAddress = new Uri("http://localhost:52824");
-            //    var putTask = client.PutAsync("api/LogIn/" + id, new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
-            //    putTask.Wait();
-            //}
-            ////Delete
-            //using (var client = new HttpClient())
-            //{
-            //    client.BaseAddress = new Uri("http://localhost:52824");
-            //    var deleteTask = client.DeleteAsync("api/LogIn/" + id);
-            //    deleteTask.Wait();
-            //}
             //Get
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("http://localhost:52824");
-                var responseTask = client.GetAsync("api/LogIn");
-                responseTask.Wait();
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var readTask = result.Content.ReadAsStringAsync();
-                    readTask.Wait();
-                    login = JsonConvert.DeserializeObject<IList<LogInElements>>(readTask.Result);
-                }
-                else
-                {
-                    login = Enumerable.Empty<LogInElements>();
-                }
-            }
+            var User = new Users();
+            var login = User.GetLogIn();
             //compre with mongo
             //success: load messages site
             //fail: show message and form again
             foreach (LogInElements elements in login)
             {
                 if ((elements.UserName == userName))
-                {
-                    ZigZag cifradoZigZag = new ZigZag();
-                    var CaracterExtra = new byte();
-                    var BytesList = cifradoZigZag.LecturaDescifrado(elements.Password, ref CaracterExtra);
-                    var CantidadCaracterExtra = 0;
-                    var Matrix = cifradoZigZag.MatrixCreationDecryption(BytesList.Count(), levels, ref CantidadCaracterExtra);
-                    var CaracterExtra2 = new byte();
-                    if (CantidadCaracterExtra > BytesList.Count())
-                    {
-                        BytesList = cifradoZigZag.AgregarCaracterExtra(BytesList, CantidadCaracterExtra, ref CaracterExtra2);
-                    }
-                    //hace falta enviar CaracterExtra2
-                    var Decipherpassword = cifradoZigZag.DecifrarMensaje(levels, BytesList, Matrix, CaracterExtra);
+                { 
+                    var Decipherpassword = User.ZigZagEncryptionDechipher(elements.Password,levels);
                     if (Decipherpassword == password)
                     {
-                        return RedirectToAction("Index","Messages", new { userName});
+                        datosSingelton.Datos.Nombre = userName;
+                        Decipherpassword = User.ZigZagEncryptionDechipher(elements.PrivateKey,levels);
+                        var PrivateKey = Convert.ToInt32(Decipherpassword,2);
+                        datosSingelton.Datos.PrivateKey = PrivateKey;
+                        return View();
                     }
                 }
             }
@@ -94,33 +58,76 @@ namespace TeleCord.Controllers
             var userName = Request.Form["userName"].ToString();
             var password = Request.Form["password"].ToString();
             var levels = Convert.ToInt32(Request.Form["levels"].ToString());
-            //método para cifrar la clave ZigZag
-            ZigZag cifradoZigZag = new ZigZag();
-            var BytesList = cifradoZigZag.LecturaCifrado(password);
-            var CantidadCaracterExtra = 0;
-            var Matrix = cifradoZigZag.MatrixCreation(BytesList.Count(), levels, ref CantidadCaracterExtra);
-            var CaracterExtra = new byte();
-            if (CantidadCaracterExtra > BytesList.Count())
+            //Get para verificar que no existe un Usuario con otro Nombre
+            var found = false;
+            var User = new Users();
+            var login = User.GetLogIn(); 
+            foreach (LogInElements elements in login)
             {
-                BytesList = cifradoZigZag.AgregarCaracterExtra(BytesList, CantidadCaracterExtra, ref CaracterExtra);
+                if ((elements.UserName == userName))
+                {
+                    found = true;
+                    break;
+                }
             }
-            BytesList = cifradoZigZag.CifrarMensaje(Matrix, levels, BytesList, CaracterExtra);
-            var CipherPassword = string.Empty;
-            foreach(byte bit in BytesList)
+            if (found)
             {
-                CipherPassword += (char)bit;
+                return HttpNotFound();
             }
-            //elemento a cifrar
-            LogInElements elemento = new LogInElements();
-            elemento.Password = CipherPassword;
-            elemento.UserName = userName;
-            using (var client = new HttpClient())
+            else
             {
-                client.BaseAddress = new Uri("http://localhost:52824");
-                var postjob = client.PostAsync("api/LogIn", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
-                postjob.Wait();
+                //método para cifrar la clave ZigZag
+                LogInElements elemento = new LogInElements();
+                DiffieHellman diffieHellman = new DiffieHellman();
+                DateTime now = DateTime.Now;
+                var ticks = now.Ticks;
+                var ab = (int)(ticks % 17);
+                var p = 23;
+                var g = 11;
+                var a = Convert.ToString(ab, 2);
+                a = a.PadLeft(8, '0');
+                //cifrar a en binario
+                a = User.ZigZagEncryptionCipher(a,levels);
+                //cifrar la contraseña del ususario
+                var CipherPassword = User.ZigZagEncryptionCipher(password,levels);
+                //generar A con diffie Hellman
+                var A = diffieHellman.GenerarClaves(ab, p,g);
+                //elemento a cifrar
+                elemento.Password = CipherPassword;
+                elemento.UserName = userName;
+                elemento.A = Convert.ToString(A);
+                elemento.PrivateKey = a;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:51508");
+                    var postjob = client.PostAsync("api/LogIn", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
+                    postjob.Wait();
+                }
+                return RedirectToAction("Index");
             }
-            return RedirectToAction("Index");
+        }
+        public ActionResult Modification()
+        {
+            ////Put
+            //using (var client = new HttpClient())
+            //{
+            //    elemento.Id = id;
+            //    client.BaseAddress = new Uri("http://localhost:51508");
+            //    var putTask = client.PutAsync("api/LogIn/" + id, new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
+            //    putTask.Wait();
+            //}
+            return View();
+        }
+        public ActionResult Delete()
+        {
+            ////Delete
+            //using (var client = new HttpClient())
+            //{
+            //    client.BaseAddress = new Uri("http://localhost:52824");
+            //    var deleteTask = client.DeleteAsync("api/LogIn/" + id);
+            //    deleteTask.Wait();
+            //}
+            return View();
         }
     }
 }

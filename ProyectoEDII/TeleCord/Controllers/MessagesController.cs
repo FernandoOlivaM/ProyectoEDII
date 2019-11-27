@@ -1,4 +1,5 @@
 ﻿using DLLS;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,35 +8,49 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
+using TeleCord.datos;
 using TeleCord.Models;
 
 namespace TeleCord.Controllers
 {
     public class MessagesController : Controller
     {
-        static string UserName = string.Empty;
-        public ActionResult Index(string username)
+        public ActionResult Index()
         {
-            UserName = username;
-            return View();
+            var UsersList = new List<Users>();
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach(LogInElements loggers in login)
+            {
+                var Users = new Users();
+                Users.UserName = loggers.UserName;
+                UsersList.Add(Users);
+            }
+            return View(UsersList);
         }
         [HttpPost]
         //falta revisar la vista de este y mejorarla, es algo extra
         public ActionResult SendMessage(HttpPostedFileBase postedFile)
         {
-            var key = Convert.ToInt32(Request.Form["key"]);
+            var ToUser = Request.Form["UserList"].ToString();
             var message = Request.Form["message"].ToString();
-            var a = 37;
-            var b = 105;
-            var g = 15;
-            var p = 23;
-            DiffieHellman diffiehellman = new DiffieHellman();
-            var K = diffiehellman.GenerarClaves(a,b,g,p);
-            var Key = Convert.ToString(a, 2);
-            Key = Key.PadLeft(10, '0');
-            return RedirectToAction("Cifrar", new { Key,message });
+            if (postedFile != null)
+            {
+                return View();
+            }
+            else
+            {
+                var Users = new Users();
+                var diffieHellman = new DiffieHellman();
+                var Privatekey = datosSingelton.Datos.PrivateKey;
+                var PublicKey = Users.ObtenerB(ToUser);
+                var K = diffieHellman.GenerarK(PublicKey, Privatekey);
+                var Key = Convert.ToString(K, 2);
+                Key = Key.PadLeft(10, '0');
+                return RedirectToAction("Cifrar", new { Key, message,ToUser });
+            }
         }
-        public ActionResult Cifrar(string Key,string message)
+        public ActionResult Cifrar(string Key,string message, string ToUser)
         {
             SDES cifradoSDES = new SDES();
             var P10 = "8537926014";
@@ -64,12 +79,12 @@ namespace TeleCord.Controllers
             }
             //enviar el texto
             MessagesElements elemento = new MessagesElements();
-            elemento.Transmitter = UserName;
-            elemento.Reciever = "Zerafina";
+            elemento.Transmitter = datosSingelton.Datos.Nombre;
+            elemento.Reciever = ToUser;
             elemento.text = ciphertext;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:52824");
+                client.BaseAddress = new Uri("http://localhost:51508");
                 var postjob = client.PostAsync("api/Messages", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
                 postjob.Wait();
             }
