@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoEDII.LogInServices;
 using ProyectoEDII.Models;
+using DLLS;
 namespace ProyectoEDII.Controllers
 {
     [Route("api/[controller]")]
@@ -17,38 +18,32 @@ namespace ProyectoEDII.Controllers
         {
             messages= service;
         }
-
         // GET: api/Messages
         [HttpGet]
         public IEnumerable<MessagesElements> Get()
         {
             return messages.GetAll();
         }
-
-        // GET: api/Messages/5
-        //[HttpGet("{id}", Name = "Get")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
-
         // POST: api/Messages
-        [HttpPost]
-        public void Post(MessagesElements message)
-        {
-            messages.Insertar(message);
-        }
-
-        //// PUT: api/Messages/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
+        //[HttpPost]
+        //public void Post(MessagesElements message)
         //{
+        //    messages.Insertar(message);
         //}
-
-        //// DELETE: api/ApiWithActions/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
+        //[HttpPost]
+        //[Route("api/Token/Post/{key}")]
+        //public IActionResult SetToken([FromBody]Dictionary<string, object> json, string key)
         //{
+        //    key = key.PadLeft(256, ' ');
+        //    var stringJson = string.Join(",", json.Select(x => x.Key + ":" + x.Value).ToArray());
+        //    return RedirectToAction("GetToken", new { key = key, json = stringJson });
+        //}
+        //[HttpGet]
+        //[Route("api/Token/Get/{key}")]
+        //public ActionResult GetToken(string key, string json)
+        //{
+        //    var token = TokenGenerator.generator(key, json);
+        //    return Ok(token);
         //}
     }
 }
