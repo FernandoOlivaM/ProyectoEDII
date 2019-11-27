@@ -1,118 +1,54 @@
-﻿using DLLS;
-using Newtonsoft.Json;
+﻿using DLLS.Huffman;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Script.Serialization;
-using TeleCord.datos;
-using TeleCord.Models;
-using DLLS.Huffman;
+
 namespace TeleCord.Controllers
 {
-    public class MessagesController : Controller
+    public class FilesCompressionController : Controller
     {
-
         static Dictionary<char, charCount> diccionario = new Dictionary<char, charCount>();
         static string RutaArchivos = string.Empty;
         static string nombreArchivo = string.Empty;
         static List<byte> ListaByte = new List<byte>();
-        static List<TreeElement> lista = new List<TreeElement>();
+        static List<TreeElements> lista = new List<TreeElements>();
         const int bufferLengt = 1000000;
         static string UserName = string.Empty;
-        public ActionResult Index(string username)
+        // GET: FilesCompression
+        public ActionResult Index()
         {
-            var UsersList = new List<Users>();
-            var User = new Users();
-            var login = User.GetLogIn();
-            foreach(LogInElements loggers in login)
-            {
-                var Users = new Users();
-                Users.UserName = loggers.UserName;
-                UsersList.Add(Users);
-            }
-            return View(UsersList);
-        }
-        [HttpPost]
-        public ActionResult SendMessage(HttpPostedFileBase postedFile)
-        {
-            var ToUser = Request.Form["UserList"].ToString();
-            var message = Request.Form["message"].ToString();
-
-            if (postedFile != null)
-            {
-                return View();
-            }
-            else
-            {
-                var Users = new Users();
-                var diffieHellman = new DiffieHellman();
-                var Privatekey = datosSingelton.Datos.PrivateKey;
-                var PublicKey = Users.ObtenerB(ToUser);
-                var K = diffieHellman.GenerarK(PublicKey, Privatekey);
-                var Key = Convert.ToString(K, 2);
-                Key = Key.PadLeft(10, '0');
-                return RedirectToAction("Cifrar", new { Key, message,ToUser });
-            }
-        }
-        public ActionResult Cifrar(string Key,string message, string ToUser)
-        {
-            SDES cifradoSDES = new SDES();
-            var P10 = "8537926014";
-            var P8 = "79358216";
-            var P4 = "0321";
-            var EP = "01323210";
-            var IP = "63572014";
-            var ReverseIP = cifradoSDES.GenerarIPInverso(IP);
-            //generar claves
-            var resultanteLS1= cifradoSDES.GenerarLS1(Key, P10);
-            var K1 = cifradoSDES.GenerarK1(resultanteLS1, P8);
-            var K2 = cifradoSDES.GenerarK2(resultanteLS1, P8);
-            //cifrar
-            var BinaryList = cifradoSDES.LecturaArchivo(message);
-            var byteList = new List<byte>();
-            var cifrar = true;
-            foreach (string binary in BinaryList)
-            {
-                byte bytefinal = cifradoSDES.CifrarODecifrar(binary, IP, EP, K1, P4, K2, ReverseIP, cifrar);
-                byteList.Add(bytefinal);
-            }
-            var ciphertext = string.Empty;
-            foreach(byte bit in byteList)
-            {
-                ciphertext+=(char)bit;
-            }
-            //enviar el texto
-            MessagesElements elemento = new MessagesElements();
-            elemento.Transmitter = datosSingelton.Datos.Nombre;
-            elemento.Reciever = ToUser;
-            elemento.text = ciphertext;
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("http://localhost:51508");
-                var postjob = client.PostAsync("api/Messages", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
-                postjob.Wait();
-            }
             return View();
         }
-        private static charCount GetAnyValue<T>(byte Key)
+        [HttpPost]
+        public ActionResult RecieveFile(HttpPostedFileBase postedFile)
         {
-            charCount obj;
-            charCount retType;
-            diccionario.TryGetValue((char)Key, out obj);
-            try
+            var key = Convert.ToInt32(Request.Form["key"]);
+            var message = Request.Form["message"].ToString();
+            bool Exists;
+            string Paths = Server.MapPath("~/Files/");
+            Exists = Directory.Exists(Paths);
+            if (!Exists)
             {
-                retType = (charCount)obj;
+                Directory.CreateDirectory(Paths);
             }
-            catch
+            if (postedFile != null)
             {
-                retType = default(charCount);
+                string rutaDirectorioUsuario = Server.MapPath("");
+                string ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
+                Tree send = new Tree();
+                nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
+                RutaArchivos = rutaDirectorioUsuario;
+                send.UserPaths(rutaDirectorioUsuario, nombreArchivo);
+                postedFile.SaveAs(ArchivoLeido);
+                Huffman HuffmanProcess = new Huffman();
+                diccionario = HuffmanProcess.LecturaArchivoCompresion(diccionario, ArchivoLeido, bufferLengt, ref ListaByte);
+                lista = HuffmanProcess.OrdenamientoDelDiccionario(diccionario, lista, ListaByte);
+                return RedirectToAction("Arbol");
             }
-            return retType;
+            return RedirectToAction("Index");
         }
         public ActionResult Arbol()
         {
@@ -123,7 +59,7 @@ namespace TeleCord.Controllers
             string prefíjo = string.Empty;
             diccionario = Arbol.prefixCodes(Arbol.root, diccionario, prefíjo);
             //Escritura del compresor códigos prefíjos convertidos a bytes
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo +".huff", FileMode.Open))
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo + ".huff", FileMode.Open))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -216,22 +152,30 @@ namespace TeleCord.Controllers
             }
             return RedirectToAction("Download");
         }
-
-        public ActionResult Download()
+        private static charCount GetAnyValue<T>(byte Key)
         {
-            //este metodo es temporal, el archivo comprimido debe ser enviado como mensaje y almacenado en la base de datos.
-            return View();
+            charCount obj;
+            charCount retType;
+            diccionario.TryGetValue((char)Key, out obj);
+            try
+            {
+                retType = (charCount)obj;
+            }
+            catch
+            {
+                retType = default(charCount);
+            }
+            return retType;
         }
         static List<byte> usedChars = new List<byte>();
-
+        //Decifrar
         [HttpPost]
-
         public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
         {
             nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
 
             diccionario = new Dictionary<char, charCount>();
-            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\"+nombreArchivo+".huff", FileMode.Open))
+            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo + ".huff", FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
                 {
@@ -302,7 +246,6 @@ namespace TeleCord.Controllers
             }
             return RedirectToAction("GeneraciónDelArchivoOriginal");
         }
-
         public string Convertir(byte bit, string binario)
         {
             bit = Convert.ToByte(int.Parse(Convert.ToString(bit)));
@@ -332,7 +275,6 @@ namespace TeleCord.Controllers
             }
             return binario;
         }
-
         public ActionResult GeneraciónDelArchivoOriginal()
         {
             string binario = string.Empty;
@@ -426,6 +368,5 @@ namespace TeleCord.Controllers
             }
             return RedirectToAction("Download");
         }
-
     }
 }

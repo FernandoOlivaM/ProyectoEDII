@@ -183,5 +183,22 @@ namespace DLLS
             var Sboxes = matrizS0[F0, C0] + matrizS1[F1, C1];
             return Sboxes;
         }
+        public List<List<string>> LecutraArchivoDecifrar(List<string> text)
+        {
+            var ListofList = new List<List<string>>();
+            foreach(string message in text)
+            {
+                var BinaryList = new List<string>();
+                foreach (char caracter in message)
+                {
+                    var bit = (byte)caracter;
+                    var binary = Convert.ToString(bit, 2);
+                    binary = binary.PadLeft(8, '0');
+                    BinaryList.Add(binary);
+                }
+                ListofList.Add(BinaryList);
+            }
+            return ListofList;
+        }
     }
 }

@@ -7,12 +7,15 @@ namespace DLLS
 {
     public class DiffieHellman
     {
-        public int GenerarClaves(int a, int b, int p, int g)
+        public int GenerarClaves(int a, int p, int g)
         {
-            var A = (BigInteger.Pow(g,a))%p;
-            var B = (BigInteger.Pow(g, b)) % p;
+            var A= (BigInteger.Pow(g, a)) % p;
+            return (int)A;
+        }
+        public int GenerarK(int B, int a)
+        {
+            var p = 23;
             var K = (BigInteger.Pow(B, a)) % p;
-            var K2 = (BigInteger.Pow(A, b)) % p;
             return (int)K;
         }
     }

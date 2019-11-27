@@ -1,4 +1,10 @@
-﻿namespace DLLS.Huffman
+
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace DLLS.Huffman
+
 {
     public class Node
     {
@@ -12,5 +18,4 @@
             leftChild = null;
         }
     }
-
 }

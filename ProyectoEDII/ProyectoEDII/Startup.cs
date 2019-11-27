@@ -37,6 +37,11 @@ namespace ProyectoEDII
             services.AddSingleton<IMessagesDatabase>(sp => sp.GetRequiredService<IOptions<MessagesDatabase>>().Value);
             services.AddSingleton<MessagesService>();
             services.AddControllers();
+            //Files
+            services.Configure<FilescompressionDatabase>(Configuration.GetSection(nameof(FilescompressionDatabase)));
+            services.AddSingleton<IFilesCompressionDatabase>(sp => sp.GetRequiredService<IOptions<FilescompressionDatabase>>().Value);
+            services.AddSingleton<FilesCompressionService>();
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

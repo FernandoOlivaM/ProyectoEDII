@@ -1,8 +1,14 @@
-﻿@model IEnumerable<TeleCord.Models.LogInElements>
+﻿<form action="~/Messages/Index">
+    <input id="new" type="submit" value="Send Message" />
+</form>
 
-@{
-    ViewBag.Title = "Log_in";
-}
+<form action="~/Recieve/Index">
+    <input id="recive" type="submit" value="Recive Message" />
+</form>
+<form action="~/SearchKeyword/Index">
+    <input id="recive" type="submit" value="Search By Message" />
+</form>
+
 
 <h2>Log_in</h2>
 
@@ -50,3 +56,4 @@
 <form action="~/Messages/Show">
     <input id="recive" type="submit" value="Recive Message" />
 </form>
+

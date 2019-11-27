@@ -35,7 +35,6 @@ namespace DLLS.Huffman
             root.probability = right.probability + left.probability;
             return root;
         }
-        
         public void createDictionaryFile(string character, string prefix, Dictionary<char, charCount> codesDictionary)
         {
             charCount++;
@@ -50,7 +49,8 @@ namespace DLLS.Huffman
                 buffer[usedSlots] = Convert.ToByte('-');
                 buffer[usedSlots + 1] = Convert.ToByte('-');
                 int count = 0;
-                using (var writeStream = new FileStream(FileRoute + "\\..\\Files\\"+FileName+".huff", FileMode.OpenOrCreate))
+                using (var writeStream = new FileStream(FileRoute + "\\..\\Files\\" + FileName + ".huff", FileMode.OpenOrCreate))
+
                 {
                     using (var writer = new BinaryWriter(writeStream))
                     {

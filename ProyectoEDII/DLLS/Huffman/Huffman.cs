@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DLLS.Huffman
 {
-   public class Huffman
+    public class Huffman
     {
         public Dictionary<char, charCount> LecturaArchivoCompresion(Dictionary<char, charCount> diccionario, string ArchivoLeido, int bufferLengt, ref List<byte> ListaByte)
         {
@@ -40,15 +40,16 @@ namespace DLLS.Huffman
             }
             return diccionario;
         }
+        public List<TreeElements> OrdenamientoDelDiccionario(Dictionary<char, charCount> diccionario, List<TreeElements> ListaProbabilidades, List<byte> ListaByte)
 
-        public List<TreeElement> OrdenamientoDelDiccionario(Dictionary<char, charCount> diccionario, List<TreeElement> ListaProbabilidades, List<byte> ListaByte)
         {
             //se ordenará por orden ascendente la lista
             var sorted = from entrada in diccionario orderby entrada.Value ascending select entrada;
             //se introducirán los porcentajes de los caracteres en la tabla
             foreach (var caracter in sorted)
             {
-                TreeElement elemento = new TreeElement();
+                TreeElements elemento = new TreeElements();
+
                 double aux = (Convert.ToDouble(caracter.Value.cantidad));
                 elemento.character = caracter.Key;
                 elemento.probability = Convert.ToDouble((aux / ListaByte.Count()));
@@ -57,8 +58,8 @@ namespace DLLS.Huffman
             ListaProbabilidades.Sort();
             return ListaProbabilidades;
         }
+        public Node TreeCreation(List<TreeElements> lista)
 
-        public Node TreeCreation(List<TreeElement> lista)
         {
             Tree Auxiliar = new Tree();
             Node Aux = new Node();
@@ -119,7 +120,7 @@ namespace DLLS.Huffman
                     lista.Remove(lista[0]);
                     lista[0] = null;
                     Aux = Auxiliar.insert(izquierdo, derecho, nombre);
-                    TreeElement elemento = new TreeElement();
+                    TreeElements elemento = new TreeElements();
                     elemento.Aux = Aux;
                     elemento.probability = Aux.probability;
                     if (lista.Count() > 1)
@@ -150,6 +151,5 @@ namespace DLLS.Huffman
             }
             return lista[0].Aux;
         }
-
     }
 }

@@ -16,5 +16,8 @@ namespace ProyectoEDII.Models
         public string UserName { get; set; }
         [BsonElement("Password")]
         public string Password { get; set; }
+        [BsonElement("A")]
+        public string A { get; set; }
+        public string PrivateKey { get; set; }
     }
 }

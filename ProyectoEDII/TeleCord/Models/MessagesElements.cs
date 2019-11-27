@@ -7,6 +7,7 @@ namespace TeleCord.Models
 {
     public class MessagesElements
     {
+        public string Id { get; set; }
         public string Transmitter { get; set; }
         public string Reciever { get; set; }
         public string text { get; set; }

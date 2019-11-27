@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DLLS.Huffman
 {
-    public class charCount : IComparable
+    public class charCount: IComparable
     {
         public int cantidad { get; set; }
         public string codPref { get; set; }
