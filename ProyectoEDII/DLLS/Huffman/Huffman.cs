@@ -40,8 +40,8 @@ namespace DLLS.Huffman
             }
             return diccionario;
         }
-
         public List<TreeElements> OrdenamientoDelDiccionario(Dictionary<char, charCount> diccionario, List<TreeElements> ListaProbabilidades, List<byte> ListaByte)
+
         {
             //se ordenará por orden ascendente la lista
             var sorted = from entrada in diccionario orderby entrada.Value ascending select entrada;
@@ -49,6 +49,7 @@ namespace DLLS.Huffman
             foreach (var caracter in sorted)
             {
                 TreeElements elemento = new TreeElements();
+
                 double aux = (Convert.ToDouble(caracter.Value.cantidad));
                 elemento.character = caracter.Key;
                 elemento.probability = Convert.ToDouble((aux / ListaByte.Count()));
@@ -57,8 +58,8 @@ namespace DLLS.Huffman
             ListaProbabilidades.Sort();
             return ListaProbabilidades;
         }
-
         public Node TreeCreation(List<TreeElements> lista)
+
         {
             Tree Auxiliar = new Tree();
             Node Aux = new Node();
