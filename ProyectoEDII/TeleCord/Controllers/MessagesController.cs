@@ -19,7 +19,6 @@ namespace TeleCord.Controllers
         static string nombreArchivo = string.Empty;
         static List<byte> ListaByte = new List<byte>();
         static List<TreeElement> lista = new List<TreeElement>();
-        //largo del buffer al momento de la lectura
         const int bufferLengt = 1000000;
         static string UserName = string.Empty;
         public ActionResult Index(string username)
@@ -28,7 +27,6 @@ namespace TeleCord.Controllers
             return View();
         }
         [HttpPost]
-        //falta revisar la vista de este y mejorarla, es algo extra
         public ActionResult SendMessage(HttpPostedFileBase postedFile)
         {
             var key = Convert.ToInt32(Request.Form["key"]);
@@ -43,32 +41,28 @@ namespace TeleCord.Controllers
             if (postedFile != null)
             {
                 string rutaDirectorioUsuario = Server.MapPath("");
-                //se toma la ruta y nombre del archivo
                 string ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
-                // se añade la extensión del archivo
                 Tree send = new Tree();
                 nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
                 RutaArchivos = rutaDirectorioUsuario;
                 send.UserPaths(rutaDirectorioUsuario, nombreArchivo);
                 postedFile.SaveAs(ArchivoLeido);
-                //se aplicó la interfaz y el modelo Huffman
-                //La Listabyte se utilizó una referencia debido a que la función retornará el diccionario
                 Huffman HuffmanProcess = new Huffman();
                 diccionario = HuffmanProcess.LecturaArchivoCompresion(diccionario, ArchivoLeido, bufferLengt, ref ListaByte);
                 lista = HuffmanProcess.OrdenamientoDelDiccionario(diccionario,lista,ListaByte);
                 return RedirectToAction("Arbol");
             }
-            else {
-                var a = 22;
-                var b = 105;
-                var g = 15;
-                var p = 23;
-                DiffieHellman diffiehellman = new DiffieHellman();
-                var K = diffiehellman.GenerarClaves(a, b, g, p);
-                var Key = Convert.ToString(a, 2);
-                Key = Key.PadLeft(10, '0');
-                return RedirectToAction("Cifrar", new { Key, message });
-            }
+            
+            var a = 22;
+            var b = 105;
+            var g = 15;
+            var p = 23;
+            DiffieHellman diffiehellman = new DiffieHellman();
+            var K = diffiehellman.GenerarClaves(a, b, g, p);
+            var Key = Convert.ToString(a, 2);
+            Key = Key.PadLeft(10, '0');
+            return RedirectToAction("Cifrar", new { Key, message });
+            
         }
         public ActionResult Cifrar(string Key,string message)
         {
@@ -228,6 +222,215 @@ namespace TeleCord.Controllers
             return RedirectToAction("Download");
         }
 
+        public ActionResult Download()
+        {
+            //este metodo es temporal, el archivo comprimido debe ser enviado como mensaje y almacenado en la base de datos.
+            return View();
+        }
+        static List<byte> usedChars = new List<byte>();
+
+        [HttpPost]
+
+        public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
+        {
+            nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
+
+            diccionario = new Dictionary<char, charCount>();
+            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\"+nombreArchivo+".huff", FileMode.Open))
+            {
+                using (var reader = new BinaryReader(stream))
+                {
+                    string prefijos = string.Empty;
+                    char caracter = ' ';
+                    byte[] byteBuffer = new byte[bufferLengt];
+                    bool encontrado = false;
+                    bool separador = false;
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        for (int i = 0; i < byteBuffer.Count(); i++)
+                        {
+                            if (separador != true)
+                            {
+                                if ((byteBuffer[i] == 45))
+                                {
+                                    if ((byteBuffer[i + 1] == 45))
+                                    {
+                                        separador = true;
+                                        i = i + 2;
+                                    }
+                                }
+                                if (encontrado == false)
+                                {
+                                    if (byteBuffer[i] == 124)
+                                    {
+                                        caracter = (char)byteBuffer[i - 1];
+                                        encontrado = true;
+                                    }
+                                }
+                                else
+                                {
+                                    if ((byteBuffer[i + 1] != 124) && (byteBuffer[i] != 2))
+                                    {
+                                        prefijos += (char)byteBuffer[i];
+                                    }
+                                    else
+                                    {
+                                        charCount prefijo = new charCount();
+                                        prefijo.codPref = prefijos;
+                                        if (prefijo.codPref[0] == '|')
+                                        {
+                                            string prueba = string.Empty;
+                                            for (int j = 1; j < prefijo.codPref.Count(); j++)
+                                            {
+                                                prueba = prueba + prefijo.codPref[j];
+                                            }
+                                            prefijo.codPref = prueba;
+                                        }
+                                        diccionario.Add(caracter, prefijo);
+                                        encontrado = false;
+                                        prefijos = "";
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                usedChars.Add(byteBuffer[i]);
+                            }
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                usedChars.Remove(usedChars[0]);
+            }
+            return RedirectToAction("GeneraciónDelArchivoOriginal");
+        }
+
+        public string Convertir(byte bit, string binario)
+        {
+            bit = Convert.ToByte(int.Parse(Convert.ToString(bit)));
+            while (true)
+            {
+                if ((bit % 2) != 0)
+                {
+                    binario = "1" + binario;
+
+                }
+                else
+                {
+                    binario = "0" + binario;
+                }
+                bit /= 2;
+                if (bit <= 0)
+                {
+                    break;
+                }
+            }
+            if (binario.Count() <= 8)
+            {
+                while (binario.Count() != 8)
+                {
+                    binario = "0" + binario;
+                }
+            }
+            return binario;
+        }
+
+        public ActionResult GeneraciónDelArchivoOriginal()
+        {
+            string binario = string.Empty;
+            string texto = string.Empty;
+            charCount valor = new charCount();
+            foreach (byte bit in usedChars)
+            {
+                binario = string.Empty;
+                binario = binario + Convertir(bit, binario);
+                foreach (char car in binario)
+                {
+                    valor.codPref = valor.codPref + car;
+                    foreach (char Key in diccionario.Keys)
+                    {
+                        charCount valor2 = GetAnyValue<charCount>(Convert.ToByte(Key));
+                        if (valor.codPref == valor2.codPref)
+                        {
+                            texto = texto + Key;
+                            valor.codPref = string.Empty;
+                        }
+                    }
+                }
+            }
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo + ".huff", FileMode.OpenOrCreate))
+            {
+                using (var writer = new BinaryWriter(writeStream))
+                {
+                    int cantidadvecesbuffer = 0;
+                    byte[] byteBufferfinal = new byte[100];
+                    int cantidad = 0;
+                    foreach (char carfinal in texto)
+                    {
+                        byteBufferfinal[cantidad] = Convert.ToByte(carfinal);
+                        cantidad++;
+                        if (cantidad == 100)
+                        {
+                            if (cantidadvecesbuffer == 0)
+                            {
+                                writer.Write(byteBufferfinal);
+                                byteBufferfinal = new byte[100];
+                                cantidadvecesbuffer++;
+                                cantidad = 0;
+                            }
+                            else
+                            {
+                                writer.Seek(0, SeekOrigin.End);
+                                writer.Write(byteBufferfinal);
+                                byteBufferfinal = new byte[100];
+                                cantidad = 0;
+                            }
+                        }
+                    }
+                    if ((byteBufferfinal[0] != 0) && (byteBufferfinal[1] != 0))
+                    {
+                        int contador0 = 0;
+                        List<byte> ListAux = new List<byte>();
+                        foreach (byte bit in byteBufferfinal)
+                        {
+                            if (bit == 0)
+                            {
+                                contador0++;
+                            }
+                            else
+                            {
+                                contador0 = 0;
+                            }
+                            if (contador0 != 3)
+                            {
+                                ListAux.Add(bit);
+                            }
+                            else
+                            {
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    ListAux.Remove(ListAux.Last());
+                                }
+                                break;
+                            }
+                        }
+                        byteBufferfinal = new byte[ListAux.Count()];
+                        int j = 0;
+                        foreach (byte bite in ListAux)
+                        {
+                            byteBufferfinal[j] = bite;
+                            j++;
+                        }
+                        writer.Seek(0, SeekOrigin.End);
+                        writer.Write(byteBufferfinal);
+                    }
+                }
+            }
+            return RedirectToAction("Download");
+        }
 
     }
 }
