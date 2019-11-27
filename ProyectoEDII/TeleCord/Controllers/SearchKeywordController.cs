@@ -1,9 +1,7 @@
 ﻿using DLLS;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
 using TeleCord.datos;
@@ -11,9 +9,9 @@ using TeleCord.Models;
 
 namespace TeleCord.Controllers
 {
-    public class RecieveController : Controller
+    public class SearchKeywordController : Controller
     {
-        // GET: Recieve
+        // GET: SearchKeyword
         public ActionResult Index()
         {
             var UsersList = new List<Users>();
@@ -30,19 +28,22 @@ namespace TeleCord.Controllers
         public ActionResult RecieveMessage()
         {
             var ToUser = Request.Form["UserList"].ToString();
+            var KeyWord = Request.Form["KeyWord"].ToString();
             var Users = new Users();
             var diffieHellman = new DiffieHellman();
-            var PrivateKey=datosSingelton.Datos.PrivateKey; 
+            var PrivateKey = datosSingelton.Datos.PrivateKey;
             var PublicKey = Users.ObtenerB(ToUser);
             var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
             var Key = Convert.ToString(K, 2);
             Key = Key.PadLeft(10, '0');
-            return RedirectToAction("Decifrar",new{ Key, ToUser});
+            return RedirectToAction("SearchbyKeyword", new { Key, ToUser,KeyWord });
         }
-        public ActionResult Decifrar(string Key, string ToUser)
+        public ActionResult SearchbyKeyword(string Key, string ToUser, string KeyWord)
         {
+            //recibir mensajes
             var User = new Users();
             var messages = User.GetMessages();
+            //decifrarlo
             var StringList = new List<string>();
             var ToRList = new List<string>();
             foreach (MessagesElements elements in messages)
@@ -54,7 +55,7 @@ namespace TeleCord.Controllers
                 }
                 else
                 {
-                    if((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
                     {
                         StringList.Add(elements.text);
                         ToRList.Add("0");
@@ -87,9 +88,14 @@ namespace TeleCord.Controllers
                     response += (char)bytefinal;
                 }
                 Message.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
-                Message.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;                
+                Message.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
                 Message.text = response;
-                byteList.Add(Message);
+                response = response.ToUpper();
+                KeyWord = KeyWord.ToUpper();
+                if (response.Contains(KeyWord))
+                {
+                    byteList.Add(Message);
+                }
                 counter++;
             }
             return View(byteList);
