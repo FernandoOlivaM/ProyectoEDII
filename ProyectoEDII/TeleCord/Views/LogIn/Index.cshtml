@@ -106,6 +106,7 @@
 
 </style>
 <body>
+    <sessionState timeout="1"></sessionState>
     <center>
         <img src="~/Images/TelecordLogo.png" alt="Nature" class="responsive" width="60" height="40" /> <br /><br />
         <button onclick="document.getElementById('LoginForm').style.display='block'" style="width:auto;">Login</button>
@@ -116,14 +117,14 @@
         <div class="modal-content animate">
             @using (Html.BeginForm("Log_in", "LogIn", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-            <div class="container">
-                <h1>LOG IN</h1>
-                <label><b>Username</b></label><input type="text" placeholder="Enter Username" name="userName" required>
+                <div class="container">
+                    <h1>LOG IN</h1>
+                    <label><b>Username</b></label><input type="text" placeholder="Enter Username" name="userName" required>
 
-                <label><b>Password</b></label><input type="password" placeholder="Enter Password" name="password" required>
-                <label><b>Levels</b></label><input type="text" placeholder="Enter levels" name="levels" required>
-                <input id="login" type="submit" value="Log in" />
-            </div>
+                    <label><b>Password</b></label><input type="password" placeholder="Enter Password" name="password" required>
+                    <label><b>Levels</b></label><input type="text" placeholder="Enter levels" name="levels" required>
+                    <input id="login" type="submit" value="Log in" />
+                </div>
 
                 <div class="container" style="background-color:#f1f1f1">
                     <button type="button" onclick="document.getElementById('LoginForm').style.display='none'" class="cancelbtn">Cancel</button>
@@ -137,16 +138,16 @@
         <div class="modal-content animate">
             @using (Html.BeginForm("SignUp", "LogIn", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-            <div class="container">
-                <h1>SIGN UP</h1>
+                <div class="container">
+                    <h1>SIGN UP</h1>
 
-                <label><b>Username</b></label><input type="text" placeholder="Enter Username" name="userName" required>
+                    <label><b>Username</b></label><input type="text" placeholder="Enter Username" name="userName" required>
 
-                <label><b>Password</b></label><input type="password" placeholder="Enter Password" name="password" required>
+                    <label><b>Password</b></label><input type="password" placeholder="Enter Password" name="password" required>
 
-                <label><b>Levels</b></label><input type="text" placeholder="Enter levels" name="levels" required>
-                <input id="login" type="submit" value="Log in" />
-            </div>
+                    <label><b>Levels</b></label><input type="text" placeholder="Enter levels" name="levels" required>
+                    <input id="login" type="submit" value="Log in" />
+                </div>
 
                 <div class="container" style="background-color:#f1f1f1">
                     <button type="button" onclick="document.getElementById('SignUpForm').style.display='none'" class="cancelbtn">Cancel</button>
