@@ -141,6 +141,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\FilesCompressionElements.cs" />
     <Compile Include="Models\LogInElements.cs" />
     <Compile Include="Models\MessagesElements.cs" />
     <Compile Include="Models\Users.cs" />
@@ -188,10 +189,10 @@
     <Content Include="Views\Recieve\Decifrar.cshtml" />
     <Content Include="Views\SearchKeyword\Index.cshtml" />
     <Content Include="Views\SearchKeyword\SearchbyKeyword.cshtml" />
+    <Content Include="Views\FilesCompression\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\FilesCompression\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

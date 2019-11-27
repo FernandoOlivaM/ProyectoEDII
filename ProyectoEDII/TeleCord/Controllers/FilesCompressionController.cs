@@ -3,8 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
+using TeleCord.datos;
+using TeleCord.Models;
 
 namespace TeleCord.Controllers
 {
@@ -16,17 +21,24 @@ namespace TeleCord.Controllers
         static List<byte> ListaByte = new List<byte>();
         static List<TreeElements> lista = new List<TreeElements>();
         const int bufferLengt = 1000000;
-        static string UserName = string.Empty;
         // GET: FilesCompression
         public ActionResult Index()
         {
-            return View();
+            var UsersList = new List<Users>();
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach (LogInElements loggers in login)
+            {
+                var Users = new Users();
+                Users.UserName = loggers.UserName;
+                UsersList.Add(Users);
+            }
+            return View(UsersList);
         }
         [HttpPost]
         public ActionResult RecieveFile(HttpPostedFileBase postedFile)
         {
-            var key = Convert.ToInt32(Request.Form["key"]);
-            var message = Request.Form["message"].ToString();
+            var ToUser = Request.Form["UserList"].ToString();
             bool Exists;
             string Paths = Server.MapPath("~/Files/");
             Exists = Directory.Exists(Paths);
@@ -46,6 +58,17 @@ namespace TeleCord.Controllers
                 Huffman HuffmanProcess = new Huffman();
                 diccionario = HuffmanProcess.LecturaArchivoCompresion(diccionario, ArchivoLeido, bufferLengt, ref ListaByte);
                 lista = HuffmanProcess.OrdenamientoDelDiccionario(diccionario, lista, ListaByte);
+                var FileElement = new FilesCompressionElements();
+                FileElement.direction = postedFile.FileName;
+                FileElement.Reciever = ToUser;
+                FileElement.Transmitter = datosSingelton.Datos.Nombre;
+                var User = new Users();
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:51508");
+                    var postjob = client.PostAsync("api/FilesCompression", new StringContent(new JavaScriptSerializer().Serialize(FileElement), Encoding.UTF8, "application/json"));
+                    postjob.Wait();
+                }
                 return RedirectToAction("Arbol");
             }
             return RedirectToAction("Index");
