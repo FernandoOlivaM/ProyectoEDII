@@ -1,8 +1,39 @@
 ﻿@using TeleCord.Models;
 @{
     Layout = null;
+    if (ViewBag.status == 1)
+    {
+        <div class="alert-success">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            <strong>SUCCESS!</strong> The file has been compressed.
+
+        </div>
+        <center>
+            <input action="action" id="back" onclick="window.history.go(-2); return false;" type="button" value="Back" />
+        </center>
+    }
 }
 <style type="text/css">
+     .alert-success {
+        padding: 20px;
+        background-color: #5ab300;
+        color: wheat;
+        font-weight: bold;
+    }
+     
+    #back {
+        background-color: #1e83b8;
+        border: none;
+        color: white;
+        padding: 8px 8px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+    }
     #postedFile {
         background-color: #1e83b8;
         border: none;
@@ -14,6 +45,7 @@
         text-align: center;
         font-weight: bold;
     }
+
     body {
         font-family: Arial, Helvetica, sans-serif;
         background-color: blanchedalmond;
@@ -23,8 +55,8 @@
         color: #808080;
         font-weight: bold;
         text-align: center;
-       
     }
+
     .form-style-6 {
         font: 95% Arial, Helvetica, sans-serif;
         max-width: 400px;
@@ -105,11 +137,11 @@
                 background: #2EBC99;
             }
 </style>
-<h2>Message</h2>
+<h1>Messages</h1>
 @using (Html.BeginForm("RecieveFile", "FilesCompression", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="form-style-6">
-        <h1>New Message</h1>
+        <h1>New File Message </h1>
         <p><center>Please, select the receiver</center></p>
         <form name="SendMessage" action="SendMessage" method="post">
             To User: <select name="UserList" required>

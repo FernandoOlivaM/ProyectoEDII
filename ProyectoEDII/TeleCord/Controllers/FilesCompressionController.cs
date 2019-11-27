@@ -15,6 +15,7 @@ namespace TeleCord.Controllers
 {
     public class FilesCompressionController : Controller
     {
+        static int archivoComprimido = 0;
         static Dictionary<char, charCount> diccionario = new Dictionary<char, charCount>();
         static string RutaArchivos = string.Empty;
         static string nombreArchivo = string.Empty;
@@ -31,10 +32,46 @@ namespace TeleCord.Controllers
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                UsersList.Add(Users);
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
+            }
+            ViewBag.status = archivoComprimido;
+            return View(UsersList);
+        }
+        public ActionResult Decompress()
+        {
+            var UsersList = new List<Users>();
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach (LogInElements loggers in login)
+            {
+                var Users = new Users();
+                Users.UserName = loggers.UserName;
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
             }
             return View(UsersList);
         }
+
+
+
+        public ActionResult ShowFiles()
+        {
+            var ToUser = Request.Form["UserList"].ToString();
+            var Users = new Users();
+          //  var diffieHellman = new DiffieHellman();
+            var PrivateKey = datosSingelton.Datos.PrivateKey;
+            var PublicKey = Users.ObtenerB(ToUser);
+            //var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
+            var Key = Convert.ToString(K, 2);
+            Key = Key.PadLeft(10, '0');
+            return RedirectToAction("Decifrar", new { Key, ToUser });
+        }
+
         [HttpPost]
         public ActionResult RecieveFile(HttpPostedFileBase postedFile)
         {
@@ -65,7 +102,7 @@ namespace TeleCord.Controllers
                 var User = new Users();
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("http://localhost:51508");
+                    client.BaseAddress = new Uri("http://localhost:58992");
                     var postjob = client.PostAsync("api/FilesCompression", new StringContent(new JavaScriptSerializer().Serialize(FileElement), Encoding.UTF8, "application/json"));
                     postjob.Wait();
                 }
@@ -173,7 +210,8 @@ namespace TeleCord.Controllers
 
                 }
             }
-            return RedirectToAction("Download");
+            archivoComprimido = 1;
+            return RedirectToAction("Index");
         }
         private static charCount GetAnyValue<T>(byte Key)
         {

@@ -3,16 +3,28 @@
     Layout = null;
 }
 <style type="text/css">
-    #postedFile {
+      #back {
         background-color: #1e83b8;
         border: none;
         color: white;
-        padding: 8px 16px;
+        padding: 8px 8px;
+        text-align: center;
         text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
         margin: 4px 2px;
         cursor: pointer;
         text-align: center;
+    }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: blanchedalmond;
+    }
+
+    h1 {
+        color: #808080;
         font-weight: bold;
+        text-align: center;
     }
 
     .form-style-6 {
@@ -95,12 +107,12 @@
                 background: #2EBC99;
             }
 </style>
-<h2>Message</h2>
+<h1>Messages</h1>
 @using (Html.BeginForm("RecieveMessage", "SearchKeyword", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
 <div class="form-style-6">
-    <h1>New Message</h1>
-    <p><center>Por favor, seleccione Al Usuario al que desea enviarle un mensaje</center></p>
+    <h1>Search Message</h1>
+    <p><center>Please, select the user of the conversation </center></p>
     <form name="SendMessage" action="SendMessage" method="post">
         To User: <select name="UserList">
             @foreach (Users inventario in Model)
@@ -110,6 +122,9 @@
         </select>
     </form>
     <label><b>KeyWord</b></label><input type="text" placeholder="Enter KeyWord" name="KeyWord" required>
-    <input id="send" type="submit" value="Send message" />
+    <input id="send" type="submit" value="Search message" />
 </div>
 }
+<center>
+    <input action="action" id="back" onclick="window.history.go(-1); return false;" type="button" value="Back" />
+</center>

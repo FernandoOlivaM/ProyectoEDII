@@ -190,6 +190,7 @@
     <Content Include="Views\SearchKeyword\Index.cshtml" />
     <Content Include="Views\SearchKeyword\SearchbyKeyword.cshtml" />
     <Content Include="Views\FilesCompression\Index.cshtml" />
+    <Content Include="Views\FilesCompression\Decompress.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -14,6 +14,7 @@
         text-align: center;
         font-weight: bold;
     }
+
     #back {
         background-color: #1e83b8;
         border: none;
@@ -27,6 +28,7 @@
         cursor: pointer;
         text-align: center;
     }
+
     body {
         font-family: Arial, Helvetica, sans-serif;
         background-color: blanchedalmond;
@@ -118,11 +120,11 @@
                 background: #2EBC99;
             }
 </style>
-<h1>Messages</h1>
-@using (Html.BeginForm("RecieveMessage", "Recieve", FormMethod.Post, new { enctype = "multipart/form-data" }))
+<h1>DECOMPRESS</h1>
+@using (Html.BeginForm("ShowFiles", "FilesCompression", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="form-style-6">
-        <h1>Recieve Message</h1>
+        <h1>Recieve File</h1>
         <p><center>Please, select the user of the conversation </center></p>
         <form name="SendMessage" action="SendMessage" method="post">
             To User: <select name="UserList">
@@ -133,7 +135,7 @@
             </select>
         </form>
         <br />
-        <input id="send" type="submit" value="Receive message" />
+        <input id="send" type="submit" value="Receive file" />
     </div>
 }
 <center>

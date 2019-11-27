@@ -26,7 +26,6 @@ namespace TeleCord.Controllers
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                //Users.UserName = Users.UserName.ToUpper();
                 if(Users.UserName != datosSingelton.Datos.Nombre)
                 {
                     UsersList.Add(Users);
