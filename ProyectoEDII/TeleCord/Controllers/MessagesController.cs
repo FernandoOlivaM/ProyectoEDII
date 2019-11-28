@@ -22,43 +22,35 @@ namespace TeleCord.Controllers
             var UsersList = new List<Users>();
             var User = new Users();
             var login = User.GetLogIn();
-            foreach(LogInElements loggers in login)
+            foreach (LogInElements loggers in login)
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                if(Users.UserName != datosSingelton.Datos.Nombre)
+                if (Users.UserName != datosSingelton.Datos.Nombre)
                 {
                     UsersList.Add(Users);
                 }
             }
             ViewBag.status = mensajeValido;
             mensajeValido = 0;
-
             return View(UsersList);
         }
-        [HttpPost]
+
         //falta revisar la vista de este y mejorarla, es algo extra
-        public ActionResult SendMessage(HttpPostedFileBase postedFile)
+        public ActionResult SendMessage()
         {
             var ToUser = Request.Form["UserList"].ToString();
             var message = Request.Form["message"].ToString();
-            if (postedFile != null)
-            {
-                return View();
-            }
-            else
-            {
-                var Users = new Users();
-                var diffieHellman = new DiffieHellman();
-                var Privatekey = datosSingelton.Datos.PrivateKey;
-                var PublicKey = Users.ObtenerB(ToUser);
-                var K = diffieHellman.GenerarK(PublicKey, Privatekey);
-                var Key = Convert.ToString(K, 2);
-                Key = Key.PadLeft(10, '0');
-                return RedirectToAction("Cifrar", new { Key, message,ToUser });
-            }
+            var Users = new Users();
+            var diffieHellman = new DiffieHellman();
+            var Privatekey = datosSingelton.Datos.PrivateKey;
+            var PublicKey = Users.ObtenerB(ToUser);
+            var K = diffieHellman.GenerarK(PublicKey, Privatekey);
+            var Key = Convert.ToString(K, 2);
+            Key = Key.PadLeft(10, '0');
+            return RedirectToAction("Cifrar", new { Key, message, ToUser });
         }
-        public ActionResult Cifrar(string Key,string message, string ToUser)
+        public ActionResult Cifrar(string Key, string message, string ToUser)
         {
             SDES cifradoSDES = new SDES();
             var P10 = "8537926014";
@@ -68,22 +60,18 @@ namespace TeleCord.Controllers
             var IP = "63572014";
             var ReverseIP = cifradoSDES.GenerarIPInverso(IP);
             //generar claves
-            var resultanteLS1= cifradoSDES.GenerarLS1(Key, P10);
+            var resultanteLS1 = cifradoSDES.GenerarLS1(Key, P10);
             var K1 = cifradoSDES.GenerarK1(resultanteLS1, P8);
             var K2 = cifradoSDES.GenerarK2(resultanteLS1, P8);
             //cifrar
             var BinaryList = cifradoSDES.LecturaArchivo(message);
-            var byteList = new List<byte>();
+            //var byteList = new List<byte>();
+            var ciphertext = string.Empty;
             var cifrar = true;
             foreach (string binary in BinaryList)
             {
                 byte bytefinal = cifradoSDES.CifrarODecifrar(binary, IP, EP, K1, P4, K2, ReverseIP, cifrar);
-                byteList.Add(bytefinal);
-            }
-            var ciphertext = string.Empty;
-            foreach(byte bit in byteList)
-            {
-                ciphertext+=(char)bit;
+                ciphertext += (char)bytefinal;
             }
             //enviar el texto
             MessagesElements elemento = new MessagesElements();
@@ -92,7 +80,7 @@ namespace TeleCord.Controllers
             elemento.text = ciphertext;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:58992");
+                client.BaseAddress = new Uri("http://localhost:58992/");
                 var postjob = client.PostAsync("api/Messages", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
                 postjob.Wait();
             }

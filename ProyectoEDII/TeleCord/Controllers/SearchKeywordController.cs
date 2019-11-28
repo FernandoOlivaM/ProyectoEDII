@@ -39,7 +39,7 @@ namespace TeleCord.Controllers
             var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
             var Key = Convert.ToString(K, 2);
             Key = Key.PadLeft(10, '0');
-            return RedirectToAction("SearchbyKeyword", new { Key, ToUser,KeyWord });
+            return RedirectToAction("SearchbyKeyword", new { Key, ToUser, KeyWord });
         }
         public ActionResult SearchbyKeyword(string Key, string ToUser, string KeyWord)
         {

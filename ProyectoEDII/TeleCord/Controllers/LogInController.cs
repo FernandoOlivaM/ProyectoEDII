@@ -22,16 +22,12 @@ namespace TeleCord.Controllers
             ViewBag.status = registroValido;
             return View();
         }
-
         //Get LogIn users
         public ActionResult Log_in()
         {
             var userName = Request.Form["userName"].ToString();
             var password = Request.Form["password"].ToString();
             var levels = Convert.ToInt32(Request.Form["levels"].ToString());
-            var element = new LogInElements();
-            element.Password = password;
-            element.UserName = userName;
             //Get
             var User = new Users();
             var login = User.GetLogIn();
@@ -41,19 +37,20 @@ namespace TeleCord.Controllers
             foreach (LogInElements elements in login)
             {
                 if ((elements.UserName == userName))
-                { 
-                    var Decipherpassword = User.ZigZagEncryptionDechipher(elements.Password,levels);
+                {
+                    var Decipherpassword = User.ZigZagEncryptionDechipher(elements.Password, levels);
                     if (Decipherpassword == password)
                     {
                         datosSingelton.Datos.Nombre = userName;
-                        Decipherpassword = User.ZigZagEncryptionDechipher(elements.PrivateKey,levels);
-                        var PrivateKey = Convert.ToInt32(Decipherpassword,2);
+                        Decipherpassword = User.ZigZagEncryptionDechipher(elements.PrivateKey, levels);
+                        var PrivateKey = Convert.ToInt32(Decipherpassword, 2);
                         datosSingelton.Datos.PrivateKey = PrivateKey;
                         return View();
                     }
                 }
             }
-            return HttpNotFound();
+            registroValido = 3;
+            return RedirectToAction("Index");
         }
         public ActionResult SignUp()
         {
@@ -64,7 +61,7 @@ namespace TeleCord.Controllers
             //Get para verificar que no existe un Usuario con otro Nombre
             var found = false;
             var User = new Users();
-            var login = User.GetLogIn(); 
+            var login = User.GetLogIn();
             foreach (LogInElements elements in login)
             {
                 if ((elements.UserName == userName))
@@ -86,16 +83,16 @@ namespace TeleCord.Controllers
                 DateTime now = DateTime.Now;
                 var ticks = now.Ticks;
                 var ab = (int)(ticks % 17);
-                var p = 23;
+                var p = 1021;
                 var g = 11;
                 var a = Convert.ToString(ab, 2);
                 a = a.PadLeft(8, '0');
                 //cifrar a en binario
-                a = User.ZigZagEncryptionCipher(a,levels);
+                a = User.ZigZagEncryptionCipher(a, levels);
                 //cifrar la contraseña del ususario
-                var CipherPassword = User.ZigZagEncryptionCipher(password,levels);
+                var CipherPassword = User.ZigZagEncryptionCipher(password, levels);
                 //generar A con diffie Hellman
-                var A = diffieHellman.GenerarClaves(ab, p,g);
+                var A = diffieHellman.GenerarClaves(ab, p, g);
                 //elemento a cifrar
                 elemento.Password = CipherPassword;
                 elemento.UserName = userName;
@@ -103,12 +100,11 @@ namespace TeleCord.Controllers
                 elemento.PrivateKey = a;
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("http://localhost:58992");
+                    client.BaseAddress = new Uri("http://localhost:58992/");
                     var postjob = client.PostAsync("api/LogIn", new StringContent(new JavaScriptSerializer().Serialize(elemento), Encoding.UTF8, "application/json"));
                     postjob.Wait();
                     registroValido = 1;
                 }
-                
                 return RedirectToAction("Index");
             }
         }
