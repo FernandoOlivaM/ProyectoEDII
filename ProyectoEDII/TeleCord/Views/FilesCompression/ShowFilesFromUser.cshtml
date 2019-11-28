@@ -1,0 +1,125 @@
+﻿@model IEnumerable<TeleCord.Models.FilesCompressionElements>
+
+@{
+
+    Layout = null;
+}
+<style type="text/css">
+    #back {
+        background-color: #1e83b8;
+        border: none;
+        color: white;
+        padding: 8px 8px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: blanchedalmond;
+    }
+
+    .alert-error {
+        padding: 20px;
+        background-color: #ff8181;
+        color: wheat;
+        font-weight: bold;
+    }
+
+    h1 {
+        color: #808080;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    table {
+        border: 1px solid #ccc;
+        border-collapse: collapse;
+        background-color: #fff;
+        text-align: center;
+    }
+
+    #transmitter {
+        background-color: #4a9bc6;
+    }
+
+    #receiver {
+        background-color: #b8531e;
+    }
+
+    #message {
+        background-color: black;
+    }
+
+    table th {
+        text-align: center;
+        color: #fff;
+        font-weight: bold;
+        font-size: 20pt;
+        border: 1px solid #000;
+    }
+
+    table td {
+        background-color: #e8f2f7;
+        padding: 5px;
+        font-size: 15pt;
+        border: 1px solid #000;
+    }
+
+    table, table table td {
+        border: 0px solid #000;
+    }
+</style>
+@if (Model.Count() > 0)
+{
+    <h1>RESULT</h1>
+    <center>
+        <table class="table">
+            <tr>
+                <th id="transmitter">
+                    &nbsp&nbsp&nbsp&nbspTransmitter&nbsp&nbsp&nbsp&nbsp
+                </th>
+                <th id="receiver">
+                    &nbsp&nbsp&nbsp&nbspReciever&nbsp&nbsp&nbsp&nbsp
+                </th>
+                <th id="message">
+                    &nbsp&nbsp&nbsp&nbspFile&nbsp&nbsp&nbsp&nbsp
+                </th>
+
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Transmitter)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Reciever)
+                    </td>
+                    <td>
+                        @Html.ActionLink(item.direction, "DecompressFile","FilesCompression", new { FILENAME = item.direction },null) 
+                    </td>
+                </tr>
+            }
+
+        </table>
+
+    </center>
+}
+else
+{
+    <div class="alert-error">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <strong>ERROR!</strong> No match found.
+    </div>
+}
+<center>
+    <input action="action" id="back" onclick="window.history.go(-1); return false;" type="button" value="Back" />
+
+</center>

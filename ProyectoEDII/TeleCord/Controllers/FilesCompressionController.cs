@@ -18,6 +18,7 @@ namespace TeleCord.Controllers
         static int archivoComprimido = 0;
         static Dictionary<char, charCount> diccionario = new Dictionary<char, charCount>();
         static string RutaArchivos = string.Empty;
+
         static string nombreArchivo = string.Empty;
         static List<byte> ListaByte = new List<byte>();
         static List<TreeElements> lista = new List<TreeElements>();
@@ -58,20 +59,56 @@ namespace TeleCord.Controllers
         }
 
 
-
+        public ActionResult DecompressFile(string FILENAME)
+        {
+            var path = datosSingelton.Datos.DirectoryRoute + FILENAME;
+            return View();
+        }
         public ActionResult ShowFiles()
         {
             var ToUser = Request.Form["UserList"].ToString();
-            var Users = new Users();
-          //  var diffieHellman = new DiffieHellman();
-            var PrivateKey = datosSingelton.Datos.PrivateKey;
-            var PublicKey = Users.ObtenerB(ToUser);
-            //var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
-            var Key = Convert.ToString(K, 2);
-            Key = Key.PadLeft(10, '0');
-            return RedirectToAction("Decifrar", new { Key, ToUser });
+            return RedirectToAction("ShowFilesFromUser", new { ToUser });
         }
+        public ActionResult ShowFilesFromUser(string ToUser)
+        {
+            var User = new Users();
 
+            var files = User.GetFiles();
+            var StringList = new List<string>();
+            var ToRList = new List<string>();
+            var byteList = new List<FilesCompressionElements>();
+            var counter = 0;
+            foreach (FilesCompressionElements elements in files)
+            {
+                if ((elements.Transmitter == datosSingelton.Datos.Nombre) && (elements.Reciever == ToUser))
+                {
+                    StringList.Add(elements.direction);
+                    ToRList.Add("1");
+                }
+                else
+                {
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    {
+                        StringList.Add(elements.direction);
+                        ToRList.Add("0");
+                    }
+                }
+            }
+
+            foreach (string element in ToRList)
+            {
+                var File = new FilesCompressionElements();
+                File.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
+                File.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
+                File.direction = StringList[counter];
+                byteList.Add(File);
+                counter++;
+            }
+
+
+
+                return View(byteList);
+        }
         [HttpPost]
         public ActionResult RecieveFile(HttpPostedFileBase postedFile)
         {
@@ -89,6 +126,7 @@ namespace TeleCord.Controllers
                 string ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
                 Tree send = new Tree();
                 nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
+                datosSingelton.Datos.DirectoryRoute = rutaDirectorioUsuario;
                 RutaArchivos = rutaDirectorioUsuario;
                 send.UserPaths(rutaDirectorioUsuario, nombreArchivo);
                 postedFile.SaveAs(ArchivoLeido);
