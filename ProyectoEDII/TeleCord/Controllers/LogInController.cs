@@ -20,6 +20,7 @@ namespace TeleCord.Controllers
         public ActionResult Index()
         {
             ViewBag.status = registroValido;
+            registroValido = 0;
             return View();
         }
         //Get LogIn users
