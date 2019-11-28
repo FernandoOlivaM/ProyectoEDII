@@ -6,7 +6,7 @@
     ViewBag.Title = "SearchbyKeyword";
 }
 <style type="text/css">
-    #back {
+    #back, #refresh {
         background-color: #1e83b8;
         border: none;
         color: white;
@@ -121,5 +121,5 @@ else
 }
 <center>
     <input action="action" id="back" onclick="window.history.go(-1); return false;" type="button" value="Back" />
-
+    <input id="refresh" onclick="window.location.reload();" type="button" value="Refresh"/>
 </center>
