@@ -32,6 +32,7 @@ namespace TeleCord.Controllers
                 }
             }
             ViewBag.status = mensajeValido;
+            mensajeValido = 0;
 
             return View(UsersList);
         }
