@@ -10,7 +10,6 @@ namespace TeleCord.datos
         static datosSingelton _Instance;
         public string Nombre = string.Empty;
         public int PrivateKey = 0;
-        public string DirectoryRoute = string.Empty;
         public static datosSingelton Datos
         {
             get
