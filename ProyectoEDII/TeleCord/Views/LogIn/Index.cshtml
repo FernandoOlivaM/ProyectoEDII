@@ -29,7 +29,13 @@
             <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
             <strong>SUCCESS!</strong> The user has been deleted.
         </div>
-
+    }
+    else if (ViewBag.status == 5)
+    {
+    <div class="alert-error">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <strong>ERROR!</strong> No match found.
+    </div>
     }
 }
 <style>

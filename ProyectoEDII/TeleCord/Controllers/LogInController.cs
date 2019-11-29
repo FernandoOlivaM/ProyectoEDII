@@ -142,28 +142,34 @@ namespace TeleCord.Controllers
             var found = false;
             var User = new Users();
             var login = User.GetLogIn();
+            var passwordZigZag = string.Empty;
             foreach (LogInElements elements in login)
             {
                 if ((elements.UserName == userName))
                 {
+                    passwordZigZag = elements.Password;
                     found = true;
                     break;
                 }
             }
             if (found)
             {
-                var Decipherpassword = User.ZigZagEncryptionDechipher(password, levels);
+                var Decipherpassword = User.ZigZagEncryptionDechipher(passwordZigZag, levels);
                 if (Decipherpassword == password)
                 {
                     return RedirectToAction("Delete", new { userName });
+
                 }
                 else
                 {
+                    registroValido = 5;
+
                     return RedirectToAction("Index");
                 }
             }
             else
             {
+                registroValido = 5;
                 return RedirectToAction("Index");
             }
         }
