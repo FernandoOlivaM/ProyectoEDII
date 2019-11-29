@@ -61,6 +61,15 @@ namespace TeleCord.Controllers
             registroValido = 3;
             return RedirectToAction("Index");
         }
+        public ActionResult DeleteAccount()
+        {
+            var userName = Request.Form["userName"].ToString();
+            var password = Request.Form["password"].ToString();
+            var levels = Convert.ToInt32(Request.Form["levels"].ToString());
+            //status para cuenta eliminada
+            registroValido = 4;
+            return RedirectToAction("Index");
+        }
         public ActionResult SignUp()
         {
             //Post

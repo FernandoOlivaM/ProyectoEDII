@@ -36,6 +36,7 @@ namespace TeleCord.Controllers
                 }
             }
             ViewBag.status = archivoComprimido;
+            archivoComprimido = 0;
             return View(UsersList);
         }
         public ActionResult Decompress()
