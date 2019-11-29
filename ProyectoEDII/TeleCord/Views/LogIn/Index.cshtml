@@ -23,8 +23,17 @@
             <strong>ERROR!</strong> The Information was not Validate .
         </div>
     }
+    else if (ViewBag.status == 4)
+    {
+        <div class="alert-success">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            <strong>SUCCESS!</strong> The user has been deleted.
+        </div>
+
+    }
 }
 <style>
+
     .alert-success {
         padding: 20px;
         background-color: #5ab300;
@@ -55,7 +64,7 @@
         text-align: center;
     }
 
-    input[type=text], input[type=password],input[type=number] {
+    input[type=text], input[type=password], input[type=number] {
         width: 100%;
         padding: 12px 20px;
         margin: 8px 0;
@@ -145,6 +154,7 @@
         <img src="~/Images/TelecordLogo.png" alt="Nature" class="responsive" width="60" height="40" /> <br /><br />
         <button onclick="document.getElementById('LoginForm').style.display='block'" style="width:auto;">Login</button>
         <button onclick="document.getElementById('SignUpForm').style.display='block'" style="width:auto;">Sign up</button>
+        <button onclick="document.getElementById('DeleteForm').style.display='block'" style="width:auto;">Delete account</button>
 
     </center>
     <div id="LoginForm" class="modal">
@@ -177,7 +187,7 @@
                     <label><b>Password</b></label><input type="password" placeholder="Enter Password" name="password" required>
 
                     <label><b>Levels</b></label><input type="number" placeholder="Enter levels" min="2" max="500" name="levels" required>
-                    <input id="login" type="submit" value="Log in" />
+                    <input id="login" type="submit" value="Sign up" />
                 </div>
 
                 <div class="container" style="background-color:#f1f1f1">
@@ -187,9 +197,32 @@
 
         </div>
     </div>
+    <div id="DeleteForm" class="modal">
+        <div class="modal-content animate">
+            @using (Html.BeginForm("DeleteAccount", "LogIn", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="container">
+
+                    <label><b>Username</b></label><input type="text" placeholder="Enter Username" name="userName" required>
+
+                    <label><b>Password</b></label><input type="password" placeholder="Enter Password" name="password" required>
+
+                    <label><b>Levels</b></label><input type="number" placeholder="Enter levels" min="2" max="500" name="levels" required>
+                    <input id="login" type="submit" value="Delete Account" />
+                </div>
+
+                <div class="container" style="background-color:#f1f1f1">
+                    <button type="button" onclick="document.getElementById('DeleteForm').style.display='none'" class="cancelbtn">Cancel</button>
+                </div>
+            }
+
+        </div>
+    </div>
     <script>
         var modal = document.getElementById('LoginForm');
         var modal2 = document.getElementById('SignUpForm');
+        var modal2 = document.getElementById('DeleteForm');
+
         window.onclick = function (event) {
             if (event.target == modal) {
                 modal.style.display = "none";
@@ -197,6 +230,11 @@
         }
         window.onclick = function (event) {
             if (event.target == modal2) {
+                modal.style.display = "none";
+            }
+        }
+        window.onclick = function (event) {
+            if (event.target == modal3) {
                 modal.style.display = "none";
             }
         }

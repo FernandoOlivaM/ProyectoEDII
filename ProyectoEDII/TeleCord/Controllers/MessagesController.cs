@@ -8,9 +8,8 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
-using TeleCord.datos;
 using TeleCord.Models;
-
+//extras
 namespace TeleCord.Controllers
 {
     public class MessagesController : Controller
@@ -20,12 +19,14 @@ namespace TeleCord.Controllers
         public ActionResult Index(string token)
         {
             //validación del token
-            var tokenValidation = false;
-            if (datosSingelton.Datos.token.ValidTo<DateTime.UtcNow)
+            var active = false;
+            var result = Request.Cookies["User"]["token"];
+            var tokenValidation = TokenManager.ValidateToken(result);
+            if (tokenValidation.ValidTo<DateTime.UtcNow)
             {
-                tokenValidation = true;
+                active = true;
             }
-            if (!tokenValidation)
+            if (!active)
             {
                 var UsersList = new List<Users>();
                 var User = new Users();
@@ -34,7 +35,7 @@ namespace TeleCord.Controllers
                 {
                     var Users = new Users();
                     Users.UserName = loggers.UserName;
-                    if (Users.UserName != datosSingelton.Datos.Nombre)
+                    if (Users.UserName != Request.Cookies["User"]["username"])
                     {
                         UsersList.Add(Users);
                     }
@@ -48,7 +49,6 @@ namespace TeleCord.Controllers
                 return RedirectToAction("Index","LogIn");
             }
         }
-
         //falta revisar la vista de este y mejorarla, es algo extra
         public ActionResult SendMessage()
         {
@@ -56,7 +56,7 @@ namespace TeleCord.Controllers
             var message = Request.Form["message"].ToString();
             var Users = new Users();
             var diffieHellman = new DiffieHellman();
-            var Privatekey = datosSingelton.Datos.PrivateKey;
+            var Privatekey = Convert.ToInt32(Request.Cookies["User"]["privatekey"]);
             var PublicKey = Users.ObtenerB(ToUser);
             var K = diffieHellman.GenerarK(PublicKey, Privatekey);
             var Key = Convert.ToString(K, 2);
@@ -88,7 +88,7 @@ namespace TeleCord.Controllers
             }
             //enviar el texto
             MessagesElements elemento = new MessagesElements();
-            elemento.Transmitter = datosSingelton.Datos.Nombre;
+            elemento.Transmitter = Request.Cookies["User"]["username"];
             elemento.Reciever = ToUser;
             elemento.text = ciphertext;
             using (var client = new HttpClient())

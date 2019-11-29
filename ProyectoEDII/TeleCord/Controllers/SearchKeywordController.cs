@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using TeleCord.datos;
 using TeleCord.Models;
 
 namespace TeleCord.Controllers
@@ -14,12 +13,14 @@ namespace TeleCord.Controllers
         // GET: SearchKeyword
         public ActionResult Index()
         {
-            var tokenValidation = false;
-            if (datosSingelton.Datos.token.ValidTo < DateTime.UtcNow)
+            var active = false;
+            var result = Request.Cookies["User"]["token"];
+            var tokenValidation = TokenManager.ValidateToken(result);
+            if (tokenValidation.ValidTo < DateTime.UtcNow)
             {
-                tokenValidation = true;
+                active = true;
             }
-            if (!tokenValidation)
+            if (!active)
             {
                 var UsersList = new List<Users>();
                 var User = new Users();
@@ -28,7 +29,7 @@ namespace TeleCord.Controllers
                 {
                     var Users = new Users();
                     Users.UserName = loggers.UserName;
-                    if (Users.UserName != datosSingelton.Datos.Nombre)
+                    if (Users.UserName != Request.Cookies["User"]["username"])
                     {
                         UsersList.Add(Users);
                     }
@@ -46,7 +47,7 @@ namespace TeleCord.Controllers
             var KeyWord = Request.Form["KeyWord"].ToString();
             var Users = new Users();
             var diffieHellman = new DiffieHellman();
-            var PrivateKey = datosSingelton.Datos.PrivateKey;
+            var PrivateKey = Convert.ToInt32(Request.Cookies["User"]["privatekey"]);
             var PublicKey = Users.ObtenerB(ToUser);
             var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
             var Key = Convert.ToString(K, 2);
@@ -63,14 +64,14 @@ namespace TeleCord.Controllers
             var ToRList = new List<string>();
             foreach (MessagesElements elements in messages)
             {
-                if ((elements.Transmitter == datosSingelton.Datos.Nombre) && (elements.Reciever == ToUser))
+                if ((elements.Transmitter == Request.Cookies["User"]["username"]) && (elements.Reciever == ToUser))
                 {
                     StringList.Add(elements.text);
                     ToRList.Add("1");
                 }
                 else
                 {
-                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == Request.Cookies["User"]["username"]))
                     {
                         StringList.Add(elements.text);
                         ToRList.Add("0");
@@ -102,8 +103,8 @@ namespace TeleCord.Controllers
                     byte bytefinal = DecifradoSDES.CifrarODecifrar(binary, IP, EP, K1, P4, K2, ReverseIP, cifrar);
                     response += (char)bytefinal;
                 }
-                Message.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
-                Message.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
+                Message.Transmitter = ToRList[counter] == "1" ? Request.Cookies["User"]["username"] : ToUser;
+                Message.Reciever = ToRList[counter] == "1" ? ToUser : Request.Cookies["User"]["username"];
                 Message.text = response;
                 response = response.ToUpper();
                 KeyWord = KeyWord.ToUpper();

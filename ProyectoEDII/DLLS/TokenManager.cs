@@ -19,7 +19,7 @@ namespace DLLS
             {
                 Subject = new ClaimsIdentity(new[] {
                       new Claim(ClaimTypes.Name, username)}),
-                Expires = DateTime.UtcNow.AddMinutes(10),
+                Expires = DateTime.UtcNow.AddSeconds(30),
                 SigningCredentials = new SigningCredentials(securityKey,
                 SecurityAlgorithms.HmacSha256Signature)
             };
