@@ -14,7 +14,7 @@ namespace DLLS
         }
         public int GenerarK(int B, int a)
         {
-            var p = 23;
+            var p = 1021;
             var K = (BigInteger.Pow(B, a)) % p;
             return (int)K;
         }

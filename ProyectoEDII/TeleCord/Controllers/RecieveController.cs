@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
-using TeleCord.datos;
 using TeleCord.Models;
 
 namespace TeleCord.Controllers
@@ -16,26 +15,44 @@ namespace TeleCord.Controllers
         // GET: Recieve
         public ActionResult Index()
         {
-            var UsersList = new List<Users>();
-            var User = new Users();
-            var login = User.GetLogIn();
-            foreach (LogInElements loggers in login)
+            var active = false;
+            var result = Request.Cookies["User"]["token"];
+            var tokenValidation = TokenManager.ValidateToken(result);
+            if (tokenValidation != null && tokenValidation.ValidTo < DateTime.UtcNow)
             {
-                var Users = new Users();
-                Users.UserName = loggers.UserName;
-                if (Users.UserName != datosSingelton.Datos.Nombre)
-                {
-                    UsersList.Add(Users);
-                }
+                active = true;
             }
-            return View(UsersList);
+            else
+            {
+                RedirectToAction("Index", "LogIn");
+            }
+            if (!active)
+            {
+                var UsersList = new List<Users>();
+                var User = new Users();
+                var login = User.GetLogIn();
+                foreach (LogInElements loggers in login)
+                {
+                    var Users = new Users();
+                    Users.UserName = loggers.UserName;
+                    if (Users.UserName != Request.Cookies["User"]["username"])
+                    {
+                        UsersList.Add(Users);
+                    }
+                }
+                return View(UsersList);
+            }
+            else
+            {
+                return RedirectToAction("Index", "LogIn");
+            }
         }
         public ActionResult RecieveMessage()
         {
             var ToUser = Request.Form["UserList"].ToString();
             var Users = new Users();
             var diffieHellman = new DiffieHellman();
-            var PrivateKey = datosSingelton.Datos.PrivateKey;
+            var PrivateKey = Convert.ToInt32(Request.Cookies["User"]["privatekey"]);
             var PublicKey = Users.ObtenerB(ToUser);
             var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
             var Key = Convert.ToString(K, 2);
@@ -50,14 +67,14 @@ namespace TeleCord.Controllers
             var ToRList = new List<string>();
             foreach (MessagesElements elements in messages)
             {
-                if ((elements.Transmitter == datosSingelton.Datos.Nombre) && (elements.Reciever == ToUser))
+                if ((elements.Transmitter == Request.Cookies["User"]["username"]) && (elements.Reciever == ToUser))
                 {
                     StringList.Add(elements.text);
                     ToRList.Add("1");
                 }
                 else
                 {
-                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == Request.Cookies["User"]["username"]))
                     {
                         StringList.Add(elements.text);
                         ToRList.Add("0");
@@ -89,8 +106,8 @@ namespace TeleCord.Controllers
                     byte bytefinal = DecifradoSDES.CifrarODecifrar(binary, IP, EP, K1, P4, K2, ReverseIP, cifrar);
                     response += (char)bytefinal;
                 }
-                Message.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
-                Message.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
+                Message.Transmitter = ToRList[counter] == "1" ? Request.Cookies["User"]["username"] : ToUser;
+                Message.Reciever = ToRList[counter] == "1" ? ToUser : Request.Cookies["User"]["username"];
                 Message.text = response;
                 MessagesList.Add(Message);
                 counter++;

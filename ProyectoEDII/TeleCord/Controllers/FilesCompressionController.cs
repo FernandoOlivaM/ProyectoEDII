@@ -8,9 +8,8 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
-using TeleCord.datos;
 using TeleCord.Models;
-
+using DLLS;
 namespace TeleCord.Controllers
 {
     public class FilesCompressionController : Controller
@@ -23,39 +22,68 @@ namespace TeleCord.Controllers
         // GET: FilesCompression
         public ActionResult Index()
         {
-            var UsersList = new List<Users>();
-            var User = new Users();
-            var login = User.GetLogIn();
-            foreach (LogInElements loggers in login)
+            var active = false;
+            var result = Request.Cookies["User"]["token"];
+            var tokenValidation = TokenManager.ValidateToken(result);
+            if(tokenValidation != null && tokenValidation.ValidTo < DateTime.UtcNow)
             {
-                var Users = new Users();
-                Users.UserName = loggers.UserName;
-                if (Users.UserName != datosSingelton.Datos.Nombre)
-                {
-                    UsersList.Add(Users);
-                }
+                    active = true;
             }
-            ViewBag.status = archivoComprimido;
-            return View(UsersList);
+            else {
+                RedirectToAction("Index", "LogIn");
+            }
+            if (!active)
+            {
+                var UsersList = new List<Users>();
+                var User = new Users();
+                var login = User.GetLogIn();
+                foreach (LogInElements loggers in login)
+                {
+                    var Users = new Users();
+                    Users.UserName = loggers.UserName;
+                    if (Users.UserName != Request.Cookies["User"]["username"])
+                    {
+                        UsersList.Add(Users);
+                    }
+                }
+                ViewBag.status = archivoComprimido;
+                return View(UsersList);
+            }
+            else
+            {
+                return RedirectToAction("Index", "LogIn");
+            }
         }
         public ActionResult Decompress()
         {
-            var UsersList = new List<Users>();
-            var User = new Users();
-            var login = User.GetLogIn();
-            foreach (LogInElements loggers in login)
+            var active = false;
+            var result = Request.Cookies["User"]["token"];
+            var tokenValidation = TokenManager.ValidateToken(result);
+            if (tokenValidation.ValidTo < DateTime.UtcNow)
             {
-                var Users = new Users();
-                Users.UserName = loggers.UserName;
-                if (Users.UserName != datosSingelton.Datos.Nombre)
-                {
-                    UsersList.Add(Users);
-                }
+                active = true;
             }
-            return View(UsersList);
+            if (!active)
+            {
+                var UsersList = new List<Users>();
+                var User = new Users();
+                var login = User.GetLogIn();
+                foreach (LogInElements loggers in login)
+                {
+                    var Users = new Users();
+                    Users.UserName = loggers.UserName;
+                    if (Users.UserName != Request.Cookies["User"]["username"])
+                    {
+                        UsersList.Add(Users);
+                    }
+                }
+                return View(UsersList);
+            }
+            else
+            {
+                return RedirectToAction("Index", "LogIn");
+            }
         }
-
-
         public ActionResult DecompressFile(string fileName)
         {
             var rutaDirectorioUsuario = Server.MapPath("");         
@@ -77,14 +105,14 @@ namespace TeleCord.Controllers
             var counter = 0;
             foreach (FilesCompressionElements elements in files)
             {
-                if ((elements.Transmitter == datosSingelton.Datos.Nombre) && (elements.Reciever == ToUser))
+                if ((elements.Transmitter == Request.Cookies["User"]["username"]) && (elements.Reciever == ToUser))
                 {
                     StringList.Add(elements.direction);
                     ToRList.Add("1");
                 }
                 else
                 {
-                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == Request.Cookies["User"]["username"]))
                     {
                         StringList.Add(elements.direction);
                         ToRList.Add("0");
@@ -95,8 +123,8 @@ namespace TeleCord.Controllers
             foreach (string element in ToRList)
             {
                 var File = new FilesCompressionElements();
-                File.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
-                File.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
+                File.Transmitter = ToRList[counter] == "1" ? Request.Cookies["User"]["username"] : ToUser;
+                File.Reciever = ToRList[counter] == "1" ? ToUser : Request.Cookies["User"]["username"];
                 File.direction = StringList[counter];
                 byteList.Add(File);
                 counter++;
@@ -131,7 +159,7 @@ namespace TeleCord.Controllers
                 var FileElement = new FilesCompressionElements();
                 FileElement.direction = postedFile.FileName;
                 FileElement.Reciever = ToUser;
-                FileElement.Transmitter = datosSingelton.Datos.Nombre;
+                FileElement.Transmitter = Request.Cookies["User"]["username"];
                 var User = new Users();
                 using (var client = new HttpClient())
                 {

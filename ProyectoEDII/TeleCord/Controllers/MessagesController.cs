@@ -8,34 +8,51 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
-using TeleCord.datos;
 using TeleCord.Models;
-
+//extras
 namespace TeleCord.Controllers
 {
     public class MessagesController : Controller
     {
         static int mensajeValido = 0;
 
-        public ActionResult Index()
+        public ActionResult Index(string token)
         {
-            var UsersList = new List<Users>();
-            var User = new Users();
-            var login = User.GetLogIn();
-            foreach (LogInElements loggers in login)
+            //validación del token
+            var active = false;
+            var result = Request.Cookies["User"]["token"];
+            var tokenValidation = TokenManager.ValidateToken(result);
+            if(tokenValidation != null && tokenValidation.ValidTo < DateTime.UtcNow)
             {
-                var Users = new Users();
-                Users.UserName = loggers.UserName;
-                if (Users.UserName != datosSingelton.Datos.Nombre)
-                {
-                    UsersList.Add(Users);
-                }
+                    active = true;
             }
-            ViewBag.status = mensajeValido;
-            mensajeValido = 0;
-            return View(UsersList);
-        }
+            else {
+                RedirectToAction("Index", "LogIn");
+            }
 
+            if (!active)
+            {
+                var UsersList = new List<Users>();
+                var User = new Users();
+                var login = User.GetLogIn();
+                foreach (LogInElements loggers in login)
+                {
+                    var Users = new Users();
+                    Users.UserName = loggers.UserName;
+                    if (Users.UserName != Request.Cookies["User"]["username"])
+                    {
+                        UsersList.Add(Users);
+                    }
+                }
+                ViewBag.status = mensajeValido;
+                mensajeValido = 0;
+                return View(UsersList);
+            }
+            else
+            {
+                return RedirectToAction("Index","LogIn");
+            }
+        }
         //falta revisar la vista de este y mejorarla, es algo extra
         public ActionResult SendMessage()
         {
@@ -43,7 +60,7 @@ namespace TeleCord.Controllers
             var message = Request.Form["message"].ToString();
             var Users = new Users();
             var diffieHellman = new DiffieHellman();
-            var Privatekey = datosSingelton.Datos.PrivateKey;
+            var Privatekey = Convert.ToInt32(Request.Cookies["User"]["privatekey"]);
             var PublicKey = Users.ObtenerB(ToUser);
             var K = diffieHellman.GenerarK(PublicKey, Privatekey);
             var Key = Convert.ToString(K, 2);
@@ -75,7 +92,7 @@ namespace TeleCord.Controllers
             }
             //enviar el texto
             MessagesElements elemento = new MessagesElements();
-            elemento.Transmitter = datosSingelton.Datos.Nombre;
+            elemento.Transmitter = Request.Cookies["User"]["username"];
             elemento.Reciever = ToUser;
             elemento.text = ciphertext;
             using (var client = new HttpClient())

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Web.Http;
 using System.Web.Mvc;
 using TeleCord.Models;
 using System.Net.Http;
@@ -10,8 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using DLLS;
-using TeleCord.datos;
-
+using System.Net;
+using System.Security.Cryptography;
 namespace TeleCord.Controllers
 {
     public class LogInController : Controller
@@ -24,6 +24,8 @@ namespace TeleCord.Controllers
             return View();
         }
         //Get LogIn users
+        
+
         public ActionResult Log_in()
         {
             var userName = Request.Form["userName"].ToString();
@@ -42,10 +44,20 @@ namespace TeleCord.Controllers
                     var Decipherpassword = User.ZigZagEncryptionDechipher(elements.Password, levels);
                     if (Decipherpassword == password)
                     {
-                        datosSingelton.Datos.Nombre = userName;
+                        //datosSingelton.Datos.Nombre = userName;
                         Decipherpassword = User.ZigZagEncryptionDechipher(elements.PrivateKey, levels);
                         var PrivateKey = Convert.ToInt32(Decipherpassword, 2);
-                        datosSingelton.Datos.PrivateKey = PrivateKey;
+                        //datosSingelton.Datos.PrivateKey = PrivateKey;
+                        //toke
+                        HMACSHA256 hmac = new HMACSHA256();
+                        string keys = Convert.ToBase64String(hmac.Key);
+                        var result =TokenManager.GenerateToken(userName,keys);
+                        
+                        //datosSingelton.Datos.token = tokenValidation;
+                        //
+                        Response.Cookies["User"]["username"] = userName;
+                        Response.Cookies["User"]["privatekey"] = Convert.ToString(PrivateKey);
+                        Response.Cookies["User"]["token"] = result;
                         return View();
                     }
                 }
@@ -121,16 +133,51 @@ namespace TeleCord.Controllers
             //}
             return View();
         }
-        public ActionResult Delete()
+        public ActionResult DeleteAccount()
         {
-            ////Delete
-            //using (var client = new HttpClient())
-            //{
-            //    client.BaseAddress = new Uri("http://localhost:52824");
-            //    var deleteTask = client.DeleteAsync("api/LogIn/" + id);
-            //    deleteTask.Wait();
-            //}
-            return View();
+            var userName = Request.Form["userName"].ToString();
+            var password = Request.Form["password"].ToString();
+            var levels = Convert.ToInt32(Request.Form["levels"].ToString());
+            //status para cuenta eliminada
+            var found = false;
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach (LogInElements elements in login)
+            {
+                if ((elements.UserName == userName))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+            {
+                var Decipherpassword = User.ZigZagEncryptionDechipher(password, levels);
+                if (Decipherpassword == password)
+                {
+                    return RedirectToAction("Delete", new { userName });
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+        }
+        public ActionResult Delete(string userName)
+        {
+            //Delete
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost:58992/");
+                var deleteTask = client.DeleteAsync("api/LogIn/" + userName);
+                deleteTask.Wait();
+            }
+            registroValido = 4;
+            return RedirectToAction("Index");
         }
     }
 }

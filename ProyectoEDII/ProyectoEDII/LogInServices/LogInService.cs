@@ -20,8 +20,8 @@ namespace ProyectoEDII.LogInServices
         {
             return _login.Find(x => true).ToList();
         }
-        public LogInElements Get(string id) =>
-           _login.Find<LogInElements>(p => p.Id == id).FirstOrDefault();
+        public LogInElements Get(string username) =>
+           _login.Find<LogInElements>(p => p.UserName == username).FirstOrDefault();
         public LogInElements Insertar(LogInElements user)
         {
             _login.InsertOne(user);
@@ -32,9 +32,9 @@ namespace ProyectoEDII.LogInServices
             await _login.ReplaceOneAsync(users => users.Id == id, userelements);
         }
         //tercera pruba
-        public async void Eliminar(string id)
+        public async void Eliminar(string username)
         {
-            await _login.DeleteOneAsync((x => x.Id == id));
+            await _login.DeleteOneAsync((x => x.UserName == username));
         }
     }
 }
