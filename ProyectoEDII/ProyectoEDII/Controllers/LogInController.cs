@@ -59,15 +59,15 @@ namespace ProyectoEDII.Controllers
         }
 
         // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        [HttpDelete("{username}")]
+        public IActionResult Delete(string username)
         {
-            var user = login.Get(id);
+            var user = login.Get(username);
             if (user == null)
             {
                 return NotFound();
             }
-            login.Eliminar(id);
+            login.Eliminar(user.UserName);
             return NoContent();
         }
     }

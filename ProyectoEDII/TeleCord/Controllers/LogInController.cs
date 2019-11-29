@@ -139,17 +139,43 @@ namespace TeleCord.Controllers
             var password = Request.Form["password"].ToString();
             var levels = Convert.ToInt32(Request.Form["levels"].ToString());
             //status para cuenta eliminada
-            return RedirectToAction("Delete");
+            var found = false;
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach (LogInElements elements in login)
+            {
+                if ((elements.UserName == userName))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+            {
+                var Decipherpassword = User.ZigZagEncryptionDechipher(p  assword, levels);
+                if (Decipherpassword == password)
+                {
+                    return RedirectToAction("Delete", new { userName });
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
         }
-        public ActionResult Delete()
+        public ActionResult Delete(string userName)
         {
-            ////Delete
-            //using (var client = new HttpClient())
-            //{
-            //    client.BaseAddress = new Uri("http://localhost:52824");
-            //    var deleteTask = client.DeleteAsync("api/LogIn/" + id);
-            //    deleteTask.Wait();
-            //}
+            //Delete
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost:58992/");
+                var deleteTask = client.DeleteAsync("api/LogIn/" + userName);
+                deleteTask.Wait();
+            }
             registroValido = 4;
             return RedirectToAction("Index");
         }
