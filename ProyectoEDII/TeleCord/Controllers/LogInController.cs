@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using DLLS;
 using TeleCord.datos;
+using System.Net;
+using System.Security.Cryptography;
 
 namespace TeleCord.Controllers
 {
@@ -46,6 +48,12 @@ namespace TeleCord.Controllers
                         Decipherpassword = User.ZigZagEncryptionDechipher(elements.PrivateKey, levels);
                         var PrivateKey = Convert.ToInt32(Decipherpassword, 2);
                         datosSingelton.Datos.PrivateKey = PrivateKey;
+                        //toke
+                        HMACSHA256 hmac = new HMACSHA256();
+                        string keys = Convert.ToBase64String(hmac.Key);
+                        var result =TokenManager.GenerateToken(userName,keys);
+                        var tokenValidation = TokenManager.ValidateToken(result);
+                        datosSingelton.Datos.token = tokenValidation;
                         return View();
                     }
                 }

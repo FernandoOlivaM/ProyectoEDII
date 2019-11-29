@@ -17,23 +17,36 @@ namespace TeleCord.Controllers
     {
         static int mensajeValido = 0;
 
-        public ActionResult Index()
+        public ActionResult Index(string token)
         {
-            var UsersList = new List<Users>();
-            var User = new Users();
-            var login = User.GetLogIn();
-            foreach (LogInElements loggers in login)
+            //validación del token
+            var tokenValidation = false;
+            if (datosSingelton.Datos.token.ValidTo<DateTime.UtcNow)
             {
-                var Users = new Users();
-                Users.UserName = loggers.UserName;
-                if (Users.UserName != datosSingelton.Datos.Nombre)
-                {
-                    UsersList.Add(Users);
-                }
+                tokenValidation = true;
             }
-            ViewBag.status = mensajeValido;
-            mensajeValido = 0;
-            return View(UsersList);
+            if (!tokenValidation)
+            {
+                var UsersList = new List<Users>();
+                var User = new Users();
+                var login = User.GetLogIn();
+                foreach (LogInElements loggers in login)
+                {
+                    var Users = new Users();
+                    Users.UserName = loggers.UserName;
+                    if (Users.UserName != datosSingelton.Datos.Nombre)
+                    {
+                        UsersList.Add(Users);
+                    }
+                }
+                ViewBag.status = mensajeValido;
+                mensajeValido = 0;
+                return View(UsersList);
+            }
+            else
+            {
+                return RedirectToAction("Index","LogIn");
+            }
         }
 
         //falta revisar la vista de este y mejorarla, es algo extra

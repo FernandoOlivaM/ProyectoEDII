@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -10,6 +11,7 @@ namespace TeleCord.datos
         static datosSingelton _Instance;
         public string Nombre = string.Empty;
         public int PrivateKey = 0;
+        public SecurityToken token = null;
         public static datosSingelton Datos
         {
             get
