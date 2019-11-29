@@ -152,7 +152,7 @@ namespace TeleCord.Controllers
             }
             if (found)
             {
-                var Decipherpassword = User.ZigZagEncryptionDechipher(p  assword, levels);
+                var Decipherpassword = User.ZigZagEncryptionDechipher(password, levels);
                 if (Decipherpassword == password)
                 {
                     return RedirectToAction("Delete", new { userName });

@@ -25,9 +25,13 @@ namespace TeleCord.Controllers
             var active = false;
             var result = Request.Cookies["User"]["token"];
             var tokenValidation = TokenManager.ValidateToken(result);
-            if (tokenValidation.ValidTo < DateTime.UtcNow)
+            if (tokenValidation != null && tokenValidation.ValidTo < DateTime.UtcNow)
             {
                 active = true;
+            }
+            else
+            {
+                RedirectToAction("Index", "LogIn");
             }
             if (!active)
             {
@@ -303,7 +307,7 @@ namespace TeleCord.Controllers
                     byte[] byteBuffer = new byte[bufferLengt];
                     bool encontrado = false;
                     bool separador = false;
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
                     {
                         byteBuffer = reader.ReadBytes(bufferLengt);
                         for (int i = 0; i < byteBuffer.Count(); i++)
