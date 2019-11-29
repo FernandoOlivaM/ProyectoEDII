@@ -22,10 +22,10 @@ namespace TeleCord.Controllers
             var active = false;
             var result = Request.Cookies["User"]["token"];
             var tokenValidation = TokenManager.ValidateToken(result);
-            if (tokenValidation.ValidTo<DateTime.UtcNow)
-            {
-                active = true;
-            }
+            //if (tokenValidation.ValidTo<DateTime.UtcNow)
+            //{
+            //    active = true;
+            //}
             if (!active)
             {
                 var UsersList = new List<Users>();
