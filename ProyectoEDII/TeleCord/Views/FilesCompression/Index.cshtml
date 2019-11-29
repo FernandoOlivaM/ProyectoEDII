@@ -1,19 +1,26 @@
 ﻿@using TeleCord.Models;
 @{
     Layout = null;
+    if (ViewBag.status == 1)
+    {
+        <div class="alert-success">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            <strong>SUCCESS!</strong> The file has been compressed.
+
+        </div>
+        <center>
+            <input action="action" id="back" onclick="window.history.go(-2); return false;" type="button" value="Back" />
+        </center>
+    }
 }
 <style type="text/css">
-    #postedFile {
-        background-color: #1e83b8;
-        border: none;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        margin: 4px 2px;
-        cursor: pointer;
-        text-align: center;
+     .alert-success {
+        padding: 20px;
+        background-color: #5ab300;
+        color: wheat;
         font-weight: bold;
     }
+     
     #back {
         background-color: #1e83b8;
         border: none;
@@ -27,6 +34,18 @@
         cursor: pointer;
         text-align: center;
     }
+    #postedFile {
+        background-color: #1e83b8;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+    }
+
     body {
         font-family: Arial, Helvetica, sans-serif;
         background-color: blanchedalmond;
@@ -119,23 +138,21 @@
             }
 </style>
 <h1>Messages</h1>
-@using (Html.BeginForm("RecieveMessage", "Recieve", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("RecieveFile", "FilesCompression", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="form-style-6">
-        <h1>Recieve Message</h1>
-        <p><center>Please, select the user of the conversation </center></p>
+        <h1>New File Message </h1>
+        <p><center>Please, select the receiver</center></p>
         <form name="SendMessage" action="SendMessage" method="post">
-            To User: <select name="UserList">
+            To User: <select name="UserList" required>
                 @foreach (Users inventario in Model)
                 {
                     <option>@inventario.UserName</option>
                 }
             </select>
         </form>
+        <input type="file" name="postedFile" id="postedFile" />
         <br />
-        <input id="send" type="submit" value="Receive message" />
+        <input id="send" type="submit" value="Send File" />
     </div>
 }
-<center>
-    <input action="action" id="back" onclick="window.history.go(-1); return false;" type="button" value="Back" />
-</center>

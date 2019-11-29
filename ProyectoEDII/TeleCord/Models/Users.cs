@@ -16,7 +16,7 @@ namespace TeleCord.Models
             IEnumerable<LogInElements> login = null;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992/");
                 var responseTask = client.GetAsync("api/LogIn");
                 responseTask.Wait();
                 var result = responseTask.Result;
@@ -33,12 +33,34 @@ namespace TeleCord.Models
             }
             return login;
         }
+        public IEnumerable<FilesCompressionElements> GetFiles()
+        {
+            IEnumerable<FilesCompressionElements> files = null;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost:58992/");
+                var responseTask = client.GetAsync("api/FilesCompression");
+                responseTask.Wait();
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTask = result.Content.ReadAsStringAsync();
+                    readTask.Wait();
+                    files = JsonConvert.DeserializeObject<IList<FilesCompressionElements>>(readTask.Result);
+                }
+                else
+                {
+                    files = Enumerable.Empty<FilesCompressionElements>();
+                }
+            }
+            return files;
+        }
         public IEnumerable<MessagesElements> GetMessages()
         {
             IEnumerable<MessagesElements> messages = null;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992/");
                 var responseTask = client.GetAsync("api/Messages");
                 responseTask.Wait();
                 var result = responseTask.Result;
@@ -60,7 +82,7 @@ namespace TeleCord.Models
             IEnumerable<LogInElements> login = null;
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:51508");
+                client.BaseAddress = new Uri("http://localhost:58992/");
                 var responseTask = client.GetAsync("api/LogIn");
                 responseTask.Wait();
                 var result = responseTask.Result;

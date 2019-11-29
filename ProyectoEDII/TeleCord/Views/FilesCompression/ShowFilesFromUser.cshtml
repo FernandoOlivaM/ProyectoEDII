@@ -1,12 +1,11 @@
-﻿@model IEnumerable<TeleCord.Models.MessagesElements>
+﻿@model IEnumerable<TeleCord.Models.FilesCompressionElements>
 
 @{
 
     Layout = null;
-    ViewBag.Title = "SearchbyKeyword";
 }
 <style type="text/css">
-    #back, #refresh {
+    #back,#refresh {
         background-color: #1e83b8;
         border: none;
         color: white;
@@ -19,7 +18,7 @@
         cursor: pointer;
         text-align: center;
     }
-
+    
     body {
         font-family: Arial, Helvetica, sans-serif;
         background-color: blanchedalmond;
@@ -89,8 +88,9 @@
                     &nbsp&nbsp&nbsp&nbspReciever&nbsp&nbsp&nbsp&nbsp
                 </th>
                 <th id="message">
-                    &nbsp&nbsp&nbsp&nbspMessage&nbsp&nbsp&nbsp&nbsp
+                    &nbsp&nbsp&nbsp&nbspFile&nbsp&nbsp&nbsp&nbsp
                 </th>
+
             </tr>
 
             @foreach (var item in Model)
@@ -103,7 +103,7 @@
                         @Html.DisplayFor(modelItem => item.Reciever)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.text)
+                        @Html.ActionLink(item.direction, "DecompressFile","FilesCompression", new { fileName = item.direction },null) 
                     </td>
                 </tr>
             }
@@ -121,5 +121,5 @@ else
 }
 <center>
     <input action="action" id="back" onclick="window.history.go(-1); return false;" type="button" value="Back" />
-    <input id="refresh" onclick="window.location.reload();" type="button" value="Refresh"/>
+    <input id="refresh" onclick="window.location.reload();" type="button" value="Refresh" />
 </center>

@@ -1,59 +1,58 @@
-﻿<form action="~/Messages/Index">
-    <input id="new" type="submit" value="Send Message" />
-</form>
-
-<form action="~/Recieve/Index">
-    <input id="recive" type="submit" value="Recive Message" />
-</form>
-<form action="~/SearchKeyword/Index">
-    <input id="recive" type="submit" value="Search By Message" />
-</form>
-
-
-<h2>Log_in</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Id)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UserName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Password)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-<tr>
-    <td>
-        @Html.DisplayFor(modelItem => item.Id)
-    </td>
-    <td>
-        @Html.DisplayFor(modelItem => item.UserName)
-    </td>
-    <td>
-        @Html.DisplayFor(modelItem => item.Password)
-    </td>
-    <td>
-        @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
-        @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-    </td>
-</tr>
+@{
+    Layout = null;
 }
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: blanchedalmond;
+    }
 
-</table>
-<form action="~/Messages/">
-    <input id="new" type="submit" value="Send Message" />
-</form>
+    h1 {
+        color: #808080;
+        font-weight: bold;
+        text-align: center;
+       
+    }
+    #logout {
+        width: auto;
+        padding: 10px 18px;
+        background-color: #f44336;
+        color: white;
+    }
+    #button {
+        background-color: #1e83b8;
+        border: none;
+        color: white;
+        padding: 32px 64px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+        font-size : 20px;
+    }
+</style>
+    <h1>PLEASE, SELECT AN OPTION</h1>
+    <body>
+        <center>
+            <form action="~/Messages/Index">
+                <input id="button" type="submit" value="Send Message" />
+            </form>
 
-<form action="~/Messages/Show">
-    <input id="recive" type="submit" value="Recive Message" />
-</form>
-
+            <form action="~/Recieve/Index">
+                <input id="button" type="submit" value="Receive Message" />
+            </form>
+            <form action="~/SearchKeyword/Index">
+                <input id="button" type="submit" value="Search By Keyword" />
+            </form>
+            <form action="~/FilesCompression/Index">
+                <input id="button" type="submit" value="Send Files Compression" />
+            </form>
+            <form action="~/FilesCompression/Decompress">
+                <input id="button" type="submit" value="Receive Files Decompression" />
+            </form>
+            <form action="~/LogIn/">
+                <input id="logout" type="submit" value="Logout" />
+            </form>
+        </center>
+    </body>

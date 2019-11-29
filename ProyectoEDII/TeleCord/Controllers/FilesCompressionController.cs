@@ -3,30 +3,113 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
+using TeleCord.datos;
+using TeleCord.Models;
 
 namespace TeleCord.Controllers
 {
     public class FilesCompressionController : Controller
     {
+        static int archivoComprimido = 0;
         static Dictionary<char, charCount> diccionario = new Dictionary<char, charCount>();
-        static string RutaArchivos = string.Empty;
-        static string nombreArchivo = string.Empty;
         static List<byte> ListaByte = new List<byte>();
         static List<TreeElements> lista = new List<TreeElements>();
         const int bufferLengt = 1000000;
-        static string UserName = string.Empty;
         // GET: FilesCompression
         public ActionResult Index()
         {
-            return View();
+            var UsersList = new List<Users>();
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach (LogInElements loggers in login)
+            {
+                var Users = new Users();
+                Users.UserName = loggers.UserName;
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
+            }
+            ViewBag.status = archivoComprimido;
+            return View(UsersList);
+        }
+        public ActionResult Decompress()
+        {
+            var UsersList = new List<Users>();
+            var User = new Users();
+            var login = User.GetLogIn();
+            foreach (LogInElements loggers in login)
+            {
+                var Users = new Users();
+                Users.UserName = loggers.UserName;
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
+            }
+            return View(UsersList);
+        }
+
+
+        public ActionResult DecompressFile(string fileName)
+        {
+            var rutaDirectorioUsuario = Server.MapPath("");         
+            return RedirectToAction("LecturaDescompresion", new { rutaDirectorioUsuario, fileName });
+        }
+        public ActionResult ShowFiles()
+        {
+            var ToUser = Request.Form["UserList"].ToString();
+            return RedirectToAction("ShowFilesFromUser", new { ToUser });
+        }
+        public ActionResult ShowFilesFromUser(string ToUser)
+        {
+            var User = new Users();
+
+            var files = User.GetFiles();
+            var StringList = new List<string>();
+            var ToRList = new List<string>();
+            var byteList = new List<FilesCompressionElements>();
+            var counter = 0;
+            foreach (FilesCompressionElements elements in files)
+            {
+                if ((elements.Transmitter == datosSingelton.Datos.Nombre) && (elements.Reciever == ToUser))
+                {
+                    StringList.Add(elements.direction);
+                    ToRList.Add("1");
+                }
+                else
+                {
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    {
+                        StringList.Add(elements.direction);
+                        ToRList.Add("0");
+                    }
+                }
+            }
+
+            foreach (string element in ToRList)
+            {
+                var File = new FilesCompressionElements();
+                File.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
+                File.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
+                File.direction = StringList[counter];
+                byteList.Add(File);
+                counter++;
+            }
+
+
+
+                return View(byteList);
         }
         [HttpPost]
         public ActionResult RecieveFile(HttpPostedFileBase postedFile)
         {
-            var key = Convert.ToInt32(Request.Form["key"]);
-            var message = Request.Form["message"].ToString();
+            var ToUser = Request.Form["UserList"].ToString();
             bool Exists;
             string Paths = Server.MapPath("~/Files/");
             Exists = Directory.Exists(Paths);
@@ -39,18 +122,28 @@ namespace TeleCord.Controllers
                 string rutaDirectorioUsuario = Server.MapPath("");
                 string ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
                 Tree send = new Tree();
-                nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
-                RutaArchivos = rutaDirectorioUsuario;
-                send.UserPaths(rutaDirectorioUsuario, nombreArchivo);
+                var fileName = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
+                send.UserPaths(rutaDirectorioUsuario, fileName);
                 postedFile.SaveAs(ArchivoLeido);
                 Huffman HuffmanProcess = new Huffman();
                 diccionario = HuffmanProcess.LecturaArchivoCompresion(diccionario, ArchivoLeido, bufferLengt, ref ListaByte);
                 lista = HuffmanProcess.OrdenamientoDelDiccionario(diccionario, lista, ListaByte);
-                return RedirectToAction("Arbol");
+                var FileElement = new FilesCompressionElements();
+                FileElement.direction = postedFile.FileName;
+                FileElement.Reciever = ToUser;
+                FileElement.Transmitter = datosSingelton.Datos.Nombre;
+                var User = new Users();
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost:58992");
+                    var postjob = client.PostAsync("api/FilesCompression", new StringContent(new JavaScriptSerializer().Serialize(FileElement), Encoding.UTF8, "application/json"));
+                    postjob.Wait();
+                }
+                return RedirectToAction("Arbol", new { rutaDirectorioUsuario, fileName });
             }
             return RedirectToAction("Index");
         }
-        public ActionResult Arbol()
+        public ActionResult Arbol(string rutaDirectorioUsuario, string fileName)
         {
             //creación del árbol
             Huffman HuffmanProcess = new Huffman();
@@ -59,7 +152,7 @@ namespace TeleCord.Controllers
             string prefíjo = string.Empty;
             diccionario = Arbol.prefixCodes(Arbol.root, diccionario, prefíjo);
             //Escritura del compresor códigos prefíjos convertidos a bytes
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo + ".huff", FileMode.Open))
+            using (var writeStream = new FileStream(rutaDirectorioUsuario + "\\..\\Files\\" + fileName + ".huff", FileMode.Open))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -150,7 +243,8 @@ namespace TeleCord.Controllers
 
                 }
             }
-            return RedirectToAction("Download");
+            archivoComprimido = 1;
+            return RedirectToAction("Index");
         }
         private static charCount GetAnyValue<T>(byte Key)
         {
@@ -169,13 +263,13 @@ namespace TeleCord.Controllers
         }
         static List<byte> usedChars = new List<byte>();
         //Decifrar
-        [HttpPost]
-        public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
+        public ActionResult LecturaDescompresion(string rutaDirectorioUsuario, string fileName)
         {
-            nombreArchivo = Path.GetFileName(postedFile.FileName).Substring(0, Path.GetFileName(postedFile.FileName).IndexOf("."));
-
+            usedChars =  new List<byte>();
             diccionario = new Dictionary<char, charCount>();
-            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo + ".huff", FileMode.Open))
+            var fileNameNoExtension = fileName.Substring(0, fileName.IndexOf("."));
+
+            using (var stream = new FileStream(rutaDirectorioUsuario + "\\..\\Files\\" + fileNameNoExtension + ".huff", FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
                 {
@@ -244,7 +338,7 @@ namespace TeleCord.Controllers
             {
                 usedChars.Remove(usedChars[0]);
             }
-            return RedirectToAction("GeneraciónDelArchivoOriginal");
+            return RedirectToAction("GeneraciónDelArchivoOriginal", new { rutaDirectorioUsuario, fileName });
         }
         public string Convertir(byte bit, string binario)
         {
@@ -275,10 +369,11 @@ namespace TeleCord.Controllers
             }
             return binario;
         }
-        public ActionResult GeneraciónDelArchivoOriginal()
+        public ActionResult GeneraciónDelArchivoOriginal(string rutaDirectorioUsuario, string fileName)
         {
-            string binario = string.Empty;
-            string texto = string.Empty;
+            var fileNameNoExtension = fileName.Substring(0, fileName.IndexOf("."));
+            var binario = string.Empty;
+            var texto = string.Empty;
             charCount valor = new charCount();
             foreach (byte bit in usedChars)
             {
@@ -298,7 +393,7 @@ namespace TeleCord.Controllers
                     }
                 }
             }
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\" + nombreArchivo + ".huff", FileMode.OpenOrCreate))
+            using (var writeStream = new FileStream(rutaDirectorioUsuario + "\\..\\Files\\" + fileName, FileMode.Create))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -366,7 +461,13 @@ namespace TeleCord.Controllers
                     }
                 }
             }
-            return RedirectToAction("Download");
+            return RedirectToAction("Download", new { rutaDirectorioUsuario, fileName });
         }
+        public ActionResult Download(string rutaDirectorioUsuario, string fileName)
+        {
+            var fullPath = rutaDirectorioUsuario + "\\..\\Files\\" + fileName;
+            return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+        }
+
     }
 }

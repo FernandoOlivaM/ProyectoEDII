@@ -21,7 +21,10 @@ namespace TeleCord.Controllers
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                UsersList.Add(Users);
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
             }
             return View(UsersList);
         }
@@ -36,7 +39,7 @@ namespace TeleCord.Controllers
             var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
             var Key = Convert.ToString(K, 2);
             Key = Key.PadLeft(10, '0');
-            return RedirectToAction("SearchbyKeyword", new { Key, ToUser,KeyWord });
+            return RedirectToAction("SearchbyKeyword", new { Key, ToUser, KeyWord });
         }
         public ActionResult SearchbyKeyword(string Key, string ToUser, string KeyWord)
         {

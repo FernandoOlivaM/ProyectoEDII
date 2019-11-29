@@ -23,7 +23,10 @@ namespace TeleCord.Controllers
             {
                 var Users = new Users();
                 Users.UserName = loggers.UserName;
-                UsersList.Add(Users);
+                if (Users.UserName != datosSingelton.Datos.Nombre)
+                {
+                    UsersList.Add(Users);
+                }
             }
             return View(UsersList);
         }
@@ -32,12 +35,12 @@ namespace TeleCord.Controllers
             var ToUser = Request.Form["UserList"].ToString();
             var Users = new Users();
             var diffieHellman = new DiffieHellman();
-            var PrivateKey=datosSingelton.Datos.PrivateKey; 
+            var PrivateKey = datosSingelton.Datos.PrivateKey;
             var PublicKey = Users.ObtenerB(ToUser);
             var K = diffieHellman.GenerarK(PublicKey, PrivateKey);
             var Key = Convert.ToString(K, 2);
             Key = Key.PadLeft(10, '0');
-            return RedirectToAction("Decifrar",new{ Key, ToUser});
+            return RedirectToAction("Decifrar", new { Key, ToUser });
         }
         public ActionResult Decifrar(string Key, string ToUser)
         {
@@ -54,7 +57,7 @@ namespace TeleCord.Controllers
                 }
                 else
                 {
-                    if((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
+                    if ((elements.Transmitter == ToUser) && (elements.Reciever == datosSingelton.Datos.Nombre))
                     {
                         StringList.Add(elements.text);
                         ToRList.Add("0");
@@ -74,7 +77,7 @@ namespace TeleCord.Controllers
             var K1 = DecifradoSDES.GenerarK1(resultanteLS1, P8);
             var K2 = DecifradoSDES.GenerarK2(resultanteLS1, P8);
             var BinaryList = DecifradoSDES.LecutraArchivoDecifrar(StringList);
-            var byteList = new List<MessagesElements>();
+            var MessagesList = new List<MessagesElements>();
             var cifrar = false;
             var counter = 0;
             foreach (List<string> list in BinaryList)
@@ -87,12 +90,12 @@ namespace TeleCord.Controllers
                     response += (char)bytefinal;
                 }
                 Message.Transmitter = ToRList[counter] == "1" ? datosSingelton.Datos.Nombre : ToUser;
-                Message.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;                
+                Message.Reciever = ToRList[counter] == "1" ? ToUser : datosSingelton.Datos.Nombre;
                 Message.text = response;
-                byteList.Add(Message);
+                MessagesList.Add(Message);
                 counter++;
             }
-            return View(byteList);
+            return View(MessagesList);
         }
     }
 }
